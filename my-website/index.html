@@ -1,4 +1,5 @@
 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -6,10 +7,8 @@
   <title>Drama Box</title>
 
   <meta property="og:title" content="Watch Full Movie" />
-  <meta property="og:description" content="Watch trending movies, TV shows, and anime on Drama Box." />
+  <meta property="og:description" content="Watch trending movies, TV shows, and anime." />
   <meta property="og:image" content="https://i.ibb.co/n8jRPsgr/dramabox.png" />
-  <meta property="og:url" content="https://dramabox-85g.pages.dev/" />
-  <meta property="og:type" content="website" />
 
   <link rel="stylesheet" href="css/home.css">
   <script defer src="js/home.js"></script>
@@ -23,13 +22,15 @@
 
     <div class="search-wrapper">
       <input id="search-input" type="text" placeholder="Search..." oninput="searchTMDB(this.value)" />
-      <button class="search-btn">🔍</button>
     </div>
   </div>
 </header>
 
 <section class="banner" id="banner">
-  <h1 id="banner-title"></h1>
+  <div class="banner-content" onclick="openFromBanner()">
+    <h1 id="banner-title"></h1>
+    <p id="banner-desc"></p>
+  </div>
 </section>
 
 <main>
@@ -40,17 +41,17 @@
 </section>
 
 <section class="row box red-glow">
-  <h2>🎬 Trending Movies</h2>
+  <h2>🎬 Movies</h2>
   <div class="list" id="movies-list"></div>
 </section>
 
 <section class="row box red-glow">
-  <h2>📺 Trending TV Shows</h2>
+  <h2>📺 TV Shows</h2>
   <div class="list" id="tvshows-list"></div>
 </section>
 
 <section class="row box red-glow">
-  <h2>🎌 Trending Anime</h2>
+  <h2>🎌 Anime</h2>
   <div class="list" id="anime-list"></div>
 </section>
 
@@ -62,21 +63,13 @@
 
     <span class="close" onclick="closeModal()">✖</span>
 
-    <!-- VIDEO FIXED -->
-    <div class="video-container">
-      <iframe id="modal-video" allowfullscreen></iframe>
-    </div>
+    <div class="video-container"></div>
 
     <div class="info-wrapper">
       <div class="info-text">
         <h2 id="modal-title"></h2>
         <div id="modal-rating"></div>
         <p id="modal-description"></p>
-
-        <select id="server" hidden onchange="changeServer()">
-          <option value="embed" selected>HD 2</option>
-          <option value="player">HD 1</option>
-        </select>
       </div>
     </div>
 
@@ -93,8 +86,6 @@ document.getElementById("year").textContent = new Date().getFullYear();
 
 </body>
 </html>
-
-
 
 
 
