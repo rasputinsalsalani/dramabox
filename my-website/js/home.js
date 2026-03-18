@@ -5,7 +5,7 @@
 })();
 
 const BASE="https://api.themoviedb.org/3";
-const IMG="https://image.tmdb.org/t/p/original";
+const IMG="https://image.tmdb.org/t/p/w500";
 
 let currentItem=null;
 let bannerItem=null;
@@ -16,13 +16,6 @@ async function fetchJSON(url){
     const r=await fetch(url);
     return r.ok?await r.json():null;
   }catch{return null;}
-}
-
-/* FETCH TRAILER */
-async function getTrailer(id,type){
-  const d=await fetchJSON(`${BASE}/${type}/${id}/videos?api_key=${API_KEY}`);
-  const v=(d?.results||[]).find(v=>v.type==="Trailer" && v.site==="YouTube");
-  return v ? `https://www.youtube.com/embed/${v.key}?autoplay=1&mute=1` : null;
 }
 
 /* CATEGORY */
@@ -39,7 +32,7 @@ async function fetchAnime(){
 }
 
 /* BANNER */
-async function displayBanner(item){
+function displayBanner(item){
   document.getElementById("banner").style.backgroundImage=`url(${IMG}${item.backdrop_path})`;
   document.getElementById("banner-title").textContent=item.title||item.name;
   document.getElementById("banner-desc").textContent=(item.overview||"Watch now").slice(0,100)+"...";
@@ -57,6 +50,7 @@ function displayList(items,id){
 
   items.slice(0,18).forEach(i=>{
     if(!i.poster_path)return;
+
     const img=document.createElement("img");
     img.src=IMG+i.poster_path;
     img.onclick=()=>showDetails(i);
@@ -64,24 +58,30 @@ function displayList(items,id){
   });
 }
 
-/* MODAL */
-async function showDetails(item){
+/* MODAL + MOVIE PLAYER */
+function showDetails(item){
   currentItem=item;
 
   document.getElementById("modal").style.display="flex";
   document.getElementById("modal-title").textContent=item.title||item.name;
   document.getElementById("modal-description").textContent=item.overview||"No description";
 
-  const type=item.title?"movie":"tv";
-  const trailer=await getTrailer(item.id,type);
+  const type=item.title ? "movie" : "tv";
+  const id=item.id;
+
+  let url = type==="movie"
+    ? `https://zxcstream.xyz/embed/movie/${id}?autoplay=1`
+    : `https://zxcstream.xyz/embed/tv/${id}/1/1?autoplay=1`;
 
   const c=document.querySelector(".video-container");
 
-  if(trailer){
-    c.innerHTML=`<iframe src="${trailer}" allowfullscreen></iframe>`;
-  }else{
-    c.innerHTML=`<p style="padding:20px">No trailer available</p>`;
-  }
+  c.innerHTML=`
+    <iframe 
+      src="${url}" 
+      allowfullscreen 
+      allow="autoplay; fullscreen"
+    ></iframe>
+  `;
 }
 
 function closeModal(){
