@@ -41,15 +41,33 @@ async function fetchJSON(url) {
   }
 }
 
+/* 🔥 FIXED: REMOVE ANIME FROM TV */
 async function fetchTrending(type) {
   const data = await fetchJSON(`${BASE}/trending/${type}/week?api_key=${API_KEY}`);
-  return data?.results || [];
+
+  if (!data?.results) return [];
+
+  if (type === "tv") {
+    return data.results.filter(
+      item =>
+        !(
+          item.genre_ids?.includes(16) || // animation
+          item.original_language === "ja" // japanese
+        )
+    );
+  }
+
+  return data.results;
 }
 
+/* 🎌 ANIME ONLY */
 async function fetchTrendingAnime() {
   const data = await fetchJSON(`${BASE}/trending/tv/week?api_key=${API_KEY}`);
-  return data?.results?.filter(i =>
-    i.original_language === "ja" && i.genre_ids?.includes(16)
+
+  return data?.results?.filter(
+    item =>
+      item.genre_ids?.includes(16) || // animation
+      item.original_language === "ja"
   ) || [];
 }
 
@@ -109,20 +127,20 @@ function showDetails(item) {
   document.querySelector(".info-wrapper").style.backgroundImage =
     `url(${IMG}${item.poster_path})`;
 
-  showPreview(); // 👈 important
+  showPreview();
 }
 
 function closeModal() {
   modalOpen = false;
 
   document.getElementById("modal").style.display = "none";
-  document.getElementById("modal-video").src = "";
+  document.querySelector(".video-container").innerHTML = ""; // clear preview/video
 
   document.body.style.overflow = "";
 }
 
 /***********************
- * PLAYER (WITH PREVIEW)
+ * PLAYER
  ***********************/
 function showPreview() {
   const container = document.querySelector(".video-container");
@@ -156,16 +174,7 @@ function showPreview() {
 function loadVideo() {
   const container = document.querySelector(".video-container");
 
-  // loading state
-  container.innerHTML = `
-    <div style="
-      color:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      height:100%;
-    ">Loading...</div>
-  `;
+  container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%">Loading...</div>`;
 
   setTimeout(() => {
     const id = currentItem.id;
@@ -175,9 +184,7 @@ function loadVideo() {
       ? `https://zxcstream.xyz/embed/movie/${id}`
       : `https://zxcstream.xyz/embed/tv/${id}/1/1`;
 
-    container.innerHTML = `
-      <iframe src="${url}" allowfullscreen></iframe>
-    `;
+    container.innerHTML = `<iframe src="${url}" allowfullscreen></iframe>`;
   }, 500);
 }
 
@@ -231,8 +238,8 @@ window.addEventListener("popstate", () => {
  ***********************/
 async function init() {
   const movies = await fetchTrending("movie");
-  const tv = await fetchTrending("tv");
-  const anime = await fetchTrendingAnime();
+  const tv = await fetchTrending("tv");     // ✅ no anime here
+  const anime = await fetchTrendingAnime(); // ✅ anime only
 
   if (movies.length) displayBanner(movies[0]);
 
@@ -242,4 +249,3 @@ async function init() {
 }
 
 init();
-
