@@ -9,9 +9,8 @@ const IMG="https://image.tmdb.org/t/p/original";
 
 let currentItem=null;
 let bannerItem=null;
-let adClicked=false;
 
-/* SAFE FETCH */
+/* FETCH */
 async function fetchJSON(url){
   try{
     const r=await fetch(url);
@@ -19,31 +18,31 @@ async function fetchJSON(url){
   }catch{return null;}
 }
 
-/* CATEGORY FIX */
+/* FETCH TRAILER */
+async function getTrailer(id,type){
+  const d=await fetchJSON(`${BASE}/${type}/${id}/videos?api_key=${API_KEY}`);
+  const v=(d?.results||[]).find(v=>v.type==="Trailer" && v.site==="YouTube");
+  return v ? `https://www.youtube.com/embed/${v.key}?autoplay=1&mute=1` : null;
+}
+
+/* CATEGORY */
 async function fetchMovies(){
   return (await fetchJSON(`${BASE}/trending/movie/week?api_key=${API_KEY}`))?.results||[];
 }
-
 async function fetchTV(){
   const d=await fetchJSON(`${BASE}/trending/tv/week?api_key=${API_KEY}`);
   return (d?.results||[]).filter(i=>!(i.genre_ids||[]).includes(16));
 }
-
 async function fetchAnime(){
   const d=await fetchJSON(`${BASE}/trending/tv/week?api_key=${API_KEY}`);
   return (d?.results||[]).filter(i=>(i.genre_ids||[]).includes(16));
 }
 
 /* BANNER */
-function displayBanner(item){
-  if(!item)return;
-
+async function displayBanner(item){
   document.getElementById("banner").style.backgroundImage=`url(${IMG}${item.backdrop_path})`;
   document.getElementById("banner-title").textContent=item.title||item.name;
-
-  const text=item.overview||"Watch now";
-  document.getElementById("banner-desc").textContent=text.slice(0,100)+"...";
-
+  document.getElementById("banner-desc").textContent=(item.overview||"Watch now").slice(0,100)+"...";
   bannerItem=item;
 }
 
@@ -56,9 +55,8 @@ function displayList(items,id){
   const el=document.getElementById(id);
   el.innerHTML="";
 
-  items.slice(0,12).forEach(i=>{
+  items.slice(0,18).forEach(i=>{
     if(!i.poster_path)return;
-
     const img=document.createElement("img");
     img.src=IMG+i.poster_path;
     img.onclick=()=>showDetails(i);
@@ -67,51 +65,28 @@ function displayList(items,id){
 }
 
 /* MODAL */
-function showDetails(item){
+async function showDetails(item){
   currentItem=item;
-  adClicked=false;
 
   document.getElementById("modal").style.display="flex";
   document.getElementById("modal-title").textContent=item.title||item.name;
   document.getElementById("modal-description").textContent=item.overview||"No description";
 
-  showPreview();
+  const type=item.title?"movie":"tv";
+  const trailer=await getTrailer(item.id,type);
+
+  const c=document.querySelector(".video-container");
+
+  if(trailer){
+    c.innerHTML=`<iframe src="${trailer}" allowfullscreen></iframe>`;
+  }else{
+    c.innerHTML=`<p style="padding:20px">No trailer available</p>`;
+  }
 }
 
 function closeModal(){
   document.getElementById("modal").style.display="none";
   document.querySelector(".video-container").innerHTML="";
-}
-
-/* AUTOPLAY SAFE */
-function showPreview(){
-  const c=document.querySelector(".video-container");
-
-  c.innerHTML=`
-  <video autoplay muted loop playsinline>
-    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-  </video>
-  `;
-
-  c.onclick=loadVideo;
-}
-
-/* PLAYER */
-function loadVideo(){
-  const c=document.querySelector(".video-container");
-
-  if(!adClicked){
-    adClicked=true;
-    window.open("ads link here","_blank");
-    return;
-  }
-
-  const id=currentItem.id;
-  const url=currentItem.title
-  ?`https://zxcstream.xyz/embed/movie/${id}`
-  :`https://zxcstream.xyz/embed/tv/${id}/1/1`;
-
-  c.innerHTML=`<iframe src="${url}" allowfullscreen></iframe>`;
 }
 
 /* SEARCH */
