@@ -7,245 +7,126 @@
 const BASE = "https://api.themoviedb.org/3";
 const IMG = "https://image.tmdb.org/t/p/original";
 
-let currentItem = null;
-let modalOpen = false;
-let searchTimeout = null;
+let currentItem=null;
+let bannerItem=null;
+let adClicked=false;
 
-/***********************
- * ADS
- ***********************/
-const ADS_SCRIPT_URL = "https://rightyrely.com/47/fb/5e/47fb5e7a96f8dbfcacf5cd96b1264af9.js";
-
-function openAdsOnce() {
-  if (sessionStorage.getItem("ad_shown")) return;
-
-  sessionStorage.setItem("ad_shown", "1");
-
-  const w = window.open("about:blank", "_blank");
-  if (!w) return;
-
-  const s = w.document.createElement("script");
-  s.src = ADS_SCRIPT_URL;
-  w.document.body.appendChild(s);
+/* FETCH */
+async function fetchJSON(url){
+  try{
+    const r=await fetch(url);
+    return r.ok?await r.json():null;
+  }catch{return null;}
 }
 
-/***********************
- * FETCH
- ***********************/
-async function fetchJSON(url) {
-  try {
-    const res = await fetch(url);
-    return res.ok ? await res.json() : null;
-  } catch {
-    return null;
-  }
+async function fetchTrending(type){
+  const d=await fetchJSON(`${BASE}/trending/${type}/week?api_key=${API_KEY}`);
+  return d?.results||[];
 }
 
-/* 🔥 FIXED: REMOVE ANIME FROM TV */
-async function fetchTrending(type) {
-  const data = await fetchJSON(`${BASE}/trending/${type}/week?api_key=${API_KEY}`);
+/* BANNER */
+function displayBanner(item){
+  if(!item)return;
 
-  if (!data?.results) return [];
+  document.getElementById("banner").style.backgroundImage=`url(${IMG}${item.backdrop_path})`;
+  document.getElementById("banner-title").textContent=item.title||item.name;
+  document.getElementById("banner-desc").textContent=item.overview||"Watch now";
 
-  if (type === "tv") {
-    return data.results.filter(
-      item =>
-        !(
-          item.genre_ids?.includes(16) || // animation
-          item.original_language === "ja" // japanese
-        )
-    );
-  }
-
-  return data.results;
+  bannerItem=item;
 }
 
-/* 🎌 ANIME ONLY */
-async function fetchTrendingAnime() {
-  const data = await fetchJSON(`${BASE}/trending/tv/week?api_key=${API_KEY}`);
-
-  return data?.results?.filter(
-    item =>
-      item.genre_ids?.includes(16) || // animation
-      item.original_language === "ja"
-  ) || [];
+function openFromBanner(){
+  if(bannerItem) showDetails(bannerItem);
 }
 
-/***********************
- * UI
- ***********************/
-function displayBanner(item) {
-  if (!item?.backdrop_path) return;
+/* LIST */
+function displayList(items,id){
+  const el=document.getElementById(id);
+  el.innerHTML="";
 
-  document.getElementById("banner").style.backgroundImage =
-    `url(${IMG}${item.backdrop_path})`;
-
-  document.getElementById("banner-title").textContent =
-    item.title || item.name;
-}
-
-function displayList(items, id) {
-  const el = document.getElementById(id);
-  el.innerHTML = "";
-
-  items.forEach(item => {
-    if (!item.poster_path) return;
-
-    const img = document.createElement("img");
-    img.src = IMG + item.poster_path;
-    img.onclick = () => showDetails(item);
-
+  items.forEach(i=>{
+    if(!i.poster_path)return;
+    const img=document.createElement("img");
+    img.src=IMG+i.poster_path;
+    img.onclick=()=>showDetails(i);
     el.appendChild(img);
   });
 }
 
-/***********************
- * MODAL
- ***********************/
-function showDetails(item) {
-  currentItem = item;
-  modalOpen = true;
+/* MODAL */
+function showDetails(item){
+  currentItem=item;
+  adClicked=false;
 
-  const modal = document.getElementById("modal");
-  modal.style.display = "flex";
+  document.getElementById("modal").style.display="flex";
 
-  document.body.style.overflow = "hidden";
-
-  if (!history.state || !history.state.player) {
-    history.pushState({ player: true }, "");
-  }
-
-  document.getElementById("modal-title").textContent =
-    item.title || item.name;
-
-  document.getElementById("modal-description").textContent =
-    item.overview || "No description.";
-
-  document.getElementById("modal-rating").textContent =
-    "★".repeat(Math.round((item.vote_average || 0) / 2));
-
-  document.querySelector(".info-wrapper").style.backgroundImage =
-    `url(${IMG}${item.poster_path})`;
+  document.getElementById("modal-title").textContent=item.title||item.name;
+  document.getElementById("modal-description").textContent=item.overview;
 
   showPreview();
 }
 
-function closeModal() {
-  modalOpen = false;
-
-  document.getElementById("modal").style.display = "none";
-  document.querySelector(".video-container").innerHTML = ""; // clear preview/video
-
-  document.body.style.overflow = "";
+function closeModal(){
+  document.getElementById("modal").style.display="none";
+  document.querySelector(".video-container").innerHTML="";
 }
 
-/***********************
- * PLAYER
- ***********************/
-function showPreview() {
-  const container = document.querySelector(".video-container");
+/* PLAYER */
+function showPreview(){
+  const c=document.querySelector(".video-container");
 
-  container.innerHTML = `
-    <div class="preview" style="
-      position:absolute;
-      inset:0;
-      background:url(${IMG}${currentItem.backdrop_path}) center/cover;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-    ">
-      <div style="
-        width:70px;
-        height:70px;
-        border-radius:50%;
-        background:rgba(0,0,0,0.7);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:28px;
-      ">▶</div>
-    </div>
-  `;
+  c.innerHTML=`<div style="background:url(${IMG}${currentItem.backdrop_path}) center/cover;height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer">▶</div>`;
 
-  container.onclick = loadVideo;
+  c.onclick=loadVideo;
 }
 
-function loadVideo() {
-  const container = document.querySelector(".video-container");
+function loadVideo(){
+  const c=document.querySelector(".video-container");
 
-  container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%">Loading...</div>`;
-
-  setTimeout(() => {
-    const id = currentItem.id;
-    const isMovie = !!currentItem.title;
-
-    const url = isMovie
-      ? `https://zxcstream.xyz/embed/movie/${id}`
-      : `https://zxcstream.xyz/embed/tv/${id}/1/1`;
-
-    container.innerHTML = `<iframe src="${url}" allowfullscreen></iframe>`;
-  }, 500);
-}
-
-/***********************
- * SEARCH
- ***********************/
-function searchTMDB(q) {
-  clearTimeout(searchTimeout);
-
-  searchTimeout = setTimeout(async () => {
-    const section = document.getElementById("search-section");
-    const el = document.getElementById("search-results");
-
-    if (!q) {
-      section.hidden = true;
-      return;
-    }
-
-    const data = await fetchJSON(
-      `${BASE}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(q)}`
-    );
-
-    el.innerHTML = "";
-    section.hidden = false;
-
-    data?.results?.forEach(item => {
-      if (!item.poster_path) return;
-
-      const img = document.createElement("img");
-      img.src = IMG + item.poster_path;
-      img.onclick = () => showDetails(item);
-
-      el.appendChild(img);
-    });
-  }, 400);
-}
-
-/***********************
- * BACK BUTTON
- ***********************/
-window.addEventListener("popstate", () => {
-  if (modalOpen) {
-    closeModal();
-    openAdsOnce();
-    history.pushState(null, "", location.href);
+  if(!adClicked){
+    adClicked=true;
+    window.open("ads link here","_blank");
+    return;
   }
-});
 
-/***********************
- * INIT
- ***********************/
-async function init() {
-  const movies = await fetchTrending("movie");
-  const tv = await fetchTrending("tv");     // ✅ no anime here
-  const anime = await fetchTrendingAnime(); // ✅ anime only
+  const id=currentItem.id;
+  const url=currentItem.title
+  ?`https://zxcstream.xyz/embed/movie/${id}`
+  :`https://zxcstream.xyz/embed/tv/${id}/1/1`;
 
-  if (movies.length) displayBanner(movies[0]);
+  c.innerHTML=`<iframe src="${url}" allowfullscreen></iframe>`;
+}
 
-  displayList(movies, "movies-list");
-  displayList(tv, "tvshows-list");
-  displayList(anime, "anime-list");
+/* SEARCH */
+async function searchTMDB(q){
+  if(!q){
+    document.getElementById("search-section").hidden=true;
+    return;
+  }
+
+  const d=await fetchJSON(`${BASE}/search/multi?api_key=${API_KEY}&query=${q}`);
+  const el=document.getElementById("search-results");
+
+  el.innerHTML="";
+  document.getElementById("search-section").hidden=false;
+
+  d.results.forEach(i=>{
+    if(!i.poster_path)return;
+    const img=document.createElement("img");
+    img.src=IMG+i.poster_path;
+    img.onclick=()=>showDetails(i);
+    el.appendChild(img);
+  });
+}
+
+/* INIT */
+async function init(){
+  const m=await fetchTrending("movie");
+  const tv=await fetchTrending("tv");
+
+  if(m.length) displayBanner(m[0]);
+  displayList(m,"movies-list");
+  displayList(tv,"tvshows-list");
 }
 
 init();
