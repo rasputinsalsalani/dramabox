@@ -1,16 +1,13 @@
 
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Drama Box</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drama Box</title>
 
-  <meta property="og:title" content="Watch Full Movie" />
-  <meta property="og:description" content="Watch trending movies, TV shows, and anime." />
-  <meta property="og:image" content="https://i.ibb.co/n8jRPsgr/dramabox.png" />
-
-  <link rel="stylesheet" href="css/home.css">
-  <script defer src="js/home.js"></script>
+<link rel="stylesheet" href="css/home.css">
+<script defer src="js/home.js"></script>
 </head>
 
 <body>
@@ -20,7 +17,7 @@
     <img class="logo" src="https://i.ibb.co/W4TZSVj4/logo.png">
 
     <div class="search-wrapper">
-      <input id="search-input" type="text" placeholder="Search..." oninput="searchTMDB(this.value)" />
+      <input id="search-input" placeholder="Search..." oninput="searchTMDB(this.value)">
     </div>
   </div>
 </header>
@@ -73,17 +70,5 @@
   </div>
 </div>
 
-<footer class="site-footer">
-  <p>© <span id="year"></span> Drama Box</p>
-</footer>
-
-<script>
-document.getElementById("year").textContent = new Date().getFullYear();
-</script>
-
 </body>
 </html>
-
-
-
-
