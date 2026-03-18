@@ -19,9 +19,19 @@ async function fetchJSON(url){
   }catch{return null;}
 }
 
-async function fetchTrending(type){
-  const d=await fetchJSON(`${BASE}/trending/${type}/week?api_key=${API_KEY}`);
-  return d?.results||[];
+/* 🔥 FIXED CATEGORY */
+async function fetchMovies(){
+  return (await fetchJSON(`${BASE}/trending/movie/week?api_key=${API_KEY}`))?.results||[];
+}
+
+async function fetchTV(){
+  const d=await fetchJSON(`${BASE}/trending/tv/week?api_key=${API_KEY}`);
+  return d.results.filter(i=>!i.genre_ids.includes(16));
+}
+
+async function fetchAnime(){
+  const d=await fetchJSON(`${BASE}/trending/tv/week?api_key=${API_KEY}`);
+  return d.results.filter(i=>i.genre_ids.includes(16));
 }
 
 /* BANNER */
@@ -30,7 +40,9 @@ function displayBanner(item){
 
   document.getElementById("banner").style.backgroundImage=`url(${IMG}${item.backdrop_path})`;
   document.getElementById("banner-title").textContent=item.title||item.name;
-  document.getElementById("banner-desc").textContent=item.overview||"Watch now";
+
+  const text=item.overview||"Watch now";
+  document.getElementById("banner-desc").textContent=text.slice(0,120)+"...";
 
   bannerItem=item;
 }
@@ -44,8 +56,9 @@ function displayList(items,id){
   const el=document.getElementById(id);
   el.innerHTML="";
 
-  items.forEach(i=>{
+  items.slice(0,12).forEach(i=>{
     if(!i.poster_path)return;
+
     const img=document.createElement("img");
     img.src=IMG+i.poster_path;
     img.onclick=()=>showDetails(i);
@@ -59,7 +72,6 @@ function showDetails(item){
   adClicked=false;
 
   document.getElementById("modal").style.display="flex";
-
   document.getElementById("modal-title").textContent=item.title||item.name;
   document.getElementById("modal-description").textContent=item.overview;
 
@@ -71,15 +83,20 @@ function closeModal(){
   document.querySelector(".video-container").innerHTML="";
 }
 
-/* PLAYER */
+/* 🔥 AUTOPLAY PREVIEW */
 function showPreview(){
   const c=document.querySelector(".video-container");
 
-  c.innerHTML=`<div style="background:url(${IMG}${currentItem.backdrop_path}) center/cover;height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer">▶</div>`;
+  c.innerHTML=`
+  <video autoplay muted loop playsinline>
+    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+  </video>
+  `;
 
   c.onclick=loadVideo;
 }
 
+/* PLAYER */
 function loadVideo(){
   const c=document.querySelector(".video-container");
 
@@ -121,12 +138,15 @@ async function searchTMDB(q){
 
 /* INIT */
 async function init(){
-  const m=await fetchTrending("movie");
-  const tv=await fetchTrending("tv");
+  const m=await fetchMovies();
+  const tv=await fetchTV();
+  const anime=await fetchAnime();
 
   if(m.length) displayBanner(m[0]);
+
   displayList(m,"movies-list");
   displayList(tv,"tvshows-list");
+  displayList(anime,"anime-list");
 }
 
 init();
