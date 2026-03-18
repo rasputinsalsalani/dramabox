@@ -10,33 +10,23 @@
   <meta property="og:image" content="https://i.ibb.co/n8jRPsgr/dramabox.png" />
   <meta property="og:url" content="https://dramabox-85g.pages.dev/" />
   <meta property="og:type" content="website" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta name="twitter:card" content="summary_large_image" />
 
   <link rel="stylesheet" href="css/home.css">
   <script defer src="js/home.js"></script>
-  
 </head>
 
 <body>
 
 <header class="navbar">
   <div class="nav-inner">
-    <img class="logo" src="https://i.ibb.co/W4TZSVj4/logo.png" alt="Drama Box">
+    <img class="logo" src="https://i.ibb.co/W4TZSVj4/logo.png">
 
     <div class="search-wrapper">
-      <input
-        id="search-input"
-        type="text"
-        placeholder="Search movies, TV shows..."
-        oninput="searchTMDB(this.value)"
-      />
+      <input id="search-input" type="text" placeholder="Search..." oninput="searchTMDB(this.value)" />
       <button class="search-btn">🔍</button>
     </div>
   </div>
 </header>
-
 
 <section class="banner" id="banner">
   <h1 id="banner-title"></h1>
@@ -44,80 +34,65 @@
 
 <main>
 
+<section class="row box red-glow" id="search-section" hidden>
+  <h2>🔍 Search Results</h2>
+  <div class="grid" id="search-results"></div>
+</section>
 
-  <section class="row box red-glow" id="search-section" hidden>
-    <h2>🔍 Search Results</h2>
-    <div class="grid" id="search-results"></div>
-  </section>
+<section class="row box red-glow">
+  <h2>🎬 Trending Movies</h2>
+  <div class="list" id="movies-list"></div>
+</section>
 
+<section class="row box red-glow">
+  <h2>📺 Trending TV Shows</h2>
+  <div class="list" id="tvshows-list"></div>
+</section>
 
-  <section class="row box red-glow">
-    <h2>🎬 Trending Movies</h2>
-    <div class="list" id="movies-list"></div>
-  </section>
-
-
-  <section class="row box red-glow">
-    <h2>📺 Trending TV Shows</h2>
-    <div class="list" id="tvshows-list"></div>
-  </section>
-
- 
-  <section class="row box red-glow">
-    <h2>🎌 Trending Anime</h2>
-    <div class="list" id="anime-list"></div>
-  </section>
+<section class="row box red-glow">
+  <h2>🎌 Trending Anime</h2>
+  <div class="list" id="anime-list"></div>
+</section>
 
 </main>
 
-
+<!-- MODAL -->
 <div class="modal" id="modal">
   <div class="modal-content">
+
     <span class="close" onclick="closeModal()">✖</span>
 
-   
-    <div class="player-wrapper">
+    <!-- VIDEO FIXED -->
+    <div class="video-container">
       <iframe id="modal-video" allowfullscreen></iframe>
     </div>
 
- 
     <div class="info-wrapper">
       <div class="info-text">
         <h2 id="modal-title"></h2>
         <div id="modal-rating"></div>
         <p id="modal-description"></p>
 
-        
         <select id="server" hidden onchange="changeServer()">
           <option value="embed" selected>HD 2</option>
           <option value="player">HD 1</option>
         </select>
       </div>
     </div>
+
   </div>
 </div>
 
-
-<footer class="site-footer" style="background:#111; color:#fff; padding:20px; text-align:center;">
-  <p>© <span id="year"></span> Drama Box. All rights reserved.</p>
-
-  <p style="font-size:12px; color:#ccc; max-width:600px; margin:10px auto; line-height:1.5;">
-    Drama Box serves solely as an aggregator of externally hosted content. We do not host, upload, or distribute any media files. All content remains the intellectual property of its respective owners. We respect copyright law and comply with takedown requests. If you are a rights holder and believe your content is being used without authorization, please contact us immediately for prompt removal.
-  </p>
+<footer class="site-footer">
+  <p>© <span id="year"></span> Drama Box</p>
 </footer>
 
 <script>
-  document.getElementById("year").textContent = new Date().getFullYear();
+document.getElementById("year").textContent = new Date().getFullYear();
 </script>
-
-
 
 </body>
 </html>
-
-
-
-
 
 
 
