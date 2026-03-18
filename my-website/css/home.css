@@ -8,12 +8,16 @@ body {
   background: #0f1115;
   color: #fff;
   font-family: system-ui, sans-serif;
+  overflow-x: hidden;
 }
 
 /* NAV */
 .navbar {
   background: #14161e;
   padding: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .nav-inner {
@@ -25,7 +29,7 @@ body {
 }
 
 .logo {
-  height: 50px;
+  height: 48px;
 }
 
 /* SEARCH */
@@ -33,38 +37,54 @@ body {
   display: flex;
   gap: 8px;
   width: 100%;
-  max-width: 300px;
+  max-width: 320px;
 }
 
 #search-input {
   flex: 1;
-  padding: 10px;
+  padding: 10px 14px;
   border-radius: 999px;
   border: none;
   background: rgba(255,255,255,.08);
   color: #fff;
+  outline: none;
+}
+
+#search-input::placeholder {
+  color: #aaa;
 }
 
 .search-btn {
   border: none;
   border-radius: 50%;
-  padding: 10px;
+  padding: 10px 12px;
   background: rgba(255,255,255,.12);
   color: #fff;
+  cursor: pointer;
 }
 
 /* BANNER */
 .banner {
-  height: 40vh;
+  height: 42vh;
   display: flex;
   align-items: flex-end;
   padding: 20px;
   background-size: cover;
   background-position: center;
+  position: relative;
+}
+
+.banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #0f1115 10%, transparent 80%);
 }
 
 .banner h1 {
-  font-size: 28px;
+  font-size: 30px;
+  position: relative;
+  z-index: 1;
 }
 
 /* ROW */
@@ -72,14 +92,18 @@ body {
   margin: 20px;
 }
 
+.row h2 {
+  margin-bottom: 10px;
+}
+
 .box {
   padding: 14px;
   border-radius: 16px;
-  background: rgba(255,0,0,.06);
+  background: rgba(255,0,0,.05);
 }
 
 .red-glow {
-  box-shadow: 0 0 18px rgba(255,0,0,.3);
+  box-shadow: 0 0 18px rgba(255,0,0,.25);
 }
 
 /* LIST */
@@ -87,12 +111,27 @@ body {
   display: flex;
   gap: 12px;
   overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.list::-webkit-scrollbar {
+  height: 6px;
+}
+.list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.2);
+  border-radius: 10px;
 }
 
 .list img {
   width: 140px;
   border-radius: 10px;
   cursor: pointer;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.list img:hover {
+  transform: scale(1.06);
+  box-shadow: 0 6px 20px rgba(0,0,0,.6);
 }
 
 /* GRID */
@@ -105,6 +144,12 @@ body {
 .grid img {
   width: 100%;
   border-radius: 10px;
+  cursor: pointer;
+  transition: transform .2s;
+}
+
+.grid img:hover {
+  transform: scale(1.05);
 }
 
 /* MODAL */
@@ -116,22 +161,28 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 999;
+  padding: 10px;
 }
 
 .modal-content {
-  width: 95%;
+  width: 100%;
   max-width: 900px;
+  position: relative;
 }
 
+/* CLOSE */
 .close {
   position: absolute;
-  right: 20px;
-  top: 10px;
-  font-size: 24px;
+  right: 10px;
+  top: -40px;
+  font-size: 26px;
   cursor: pointer;
+  background: rgba(0,0,0,.6);
+  padding: 6px 10px;
+  border-radius: 50%;
 }
 
-/* ✅ VIDEO FIX */
+/* 🎬 VIDEO PLAYER */
 .video-container {
   position: relative;
   width: 100%;
@@ -141,17 +192,44 @@ body {
   overflow: hidden;
 }
 
+/* iframe */
 .video-container iframe {
-  position: absolute;
   width: 100%;
   height: 100%;
   border: none;
+}
+
+/* preview overlay */
+.video-container .preview {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* play button */
+.video-container .preview div {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  transition: transform .2s;
+}
+
+.video-container .preview div:hover {
+  transform: scale(1.15);
 }
 
 /* INFO */
 .info-wrapper {
   margin-top: 12px;
   background-size: cover;
+  background-position: center;
   border-radius: 12px;
   position: relative;
 }
@@ -160,13 +238,23 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,.7);
+  background: rgba(0,0,0,.75);
   border-radius: 12px;
 }
 
 .info-text {
   position: relative;
   padding: 14px;
+}
+
+.info-text h2 {
+  margin-bottom: 6px;
+}
+
+.info-text p {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #ccc;
 }
 
 /* FOOTER */
@@ -176,7 +264,7 @@ body {
   color: #aaa;
 }
 
-/* MOBILE */
+/* 📱 MOBILE */
 @media (max-width: 768px) {
   .nav-inner {
     flex-direction: column;
@@ -191,7 +279,20 @@ body {
     height: 28vh;
   }
 
+  .banner h1 {
+    font-size: 20px;
+  }
+
   .list img {
     width: 110px;
+  }
+
+  .modal-content {
+    max-width: 100%;
+  }
+
+  .close {
+    top: -35px;
+    right: 5px;
   }
 }
