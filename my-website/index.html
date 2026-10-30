@@ -1,73 +1,135 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drama Box</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="css/home.css">
-<script defer src="js/home.js"></script>
+  <title>MovieFlixHD | Premium Movie Experience</title>
+
+  <meta name="description" content="Explore movies, TV shows and anime with MovieFlixHD. Discover trending entertainment in a premium cinematic experience.">
+  <meta name="theme-color" content="#090a0d">
+
+  <link rel="stylesheet" href="css/home.css">
+  <script defer src="js/home.js"></script>
 </head>
 
 <body>
 
-<header class="navbar">
-  <div class="nav-inner">
-    <img class="logo" src="https://i.ibb.co/W4TZSVj4/logo.png">
+  <!-- NAVIGATION -->
+  <header class="navbar">
+    <div class="nav-inner">
 
-    <div class="search-wrapper">
-      <input id="search-input" placeholder="Search..." oninput="searchTMDB(this.value)">
-    </div>
-  </div>
-</header>
+      <img
+        class="logo"
+        src="https://i.ibb.co/W4TZSVj4/logo.png"
+        alt="MovieFlixHD Logo"
+      >
 
-<section class="banner" id="banner">
-  <div class="banner-content" onclick="openFromBanner()">
-    <h1 id="banner-title"></h1>
-    <p id="banner-desc"></p>
-  </div>
-</section>
-
-<main>
-
-<section class="row box red-glow" id="search-section" hidden>
-  <h2>Search Results</h2>
-  <div class="grid" id="search-results"></div>
-</section>
-
-<section class="row box red-glow">
-  <h2>Movies</h2>
-  <div class="grid-2" id="movies-list"></div>
-</section>
-
-<section class="row box red-glow">
-  <h2>TV Shows</h2>
-  <div class="grid-2" id="tvshows-list"></div>
-</section>
-
-<section class="row box red-glow">
-  <h2>Anime</h2>
-  <div class="grid-2" id="anime-list"></div>
-</section>
-
-</main>
-
-<div class="modal" id="modal">
-  <div class="modal-content">
-
-    <span class="close" onclick="closeModal()">✖</span>
-
-    <div class="video-container"></div>
-
-    <div class="info-wrapper">
-      <div class="info-text">
-        <h2 id="modal-title"></h2>
-        <p id="modal-description"></p>
+      <div class="search-wrapper">
+        <input
+          id="search-input"
+          type="search"
+          placeholder="Search movies, shows..."
+          autocomplete="off"
+          aria-label="Search movies and TV shows"
+          oninput="searchTMDB(this.value)"
+        >
       </div>
+
+    </div>
+  </header>
+
+  <!-- HERO BANNER -->
+  <section class="banner" id="banner">
+
+    <div class="banner-content" onclick="openFromBanner()">
+
+      <h1 id="banner-title"></h1>
+
+      <p id="banner-desc"></p>
+
+    </div>
+
+  </section>
+
+  <!-- MAIN CONTENT -->
+  <main>
+
+    <!-- SEARCH RESULTS -->
+    <section
+      class="row box red-glow"
+      id="search-section"
+      hidden
+    >
+
+      <h2>Search Results</h2>
+
+      <div class="grid" id="search-results"></div>
+
+    </section>
+
+    <!-- MOVIES -->
+    <section class="row box red-glow">
+
+      <h2>Trending Movies</h2>
+
+      <div class="grid-2" id="movies-list"></div>
+
+    </section>
+
+    <!-- TV SHOWS -->
+    <section class="row box red-glow">
+
+      <h2>Popular TV Shows</h2>
+
+      <div class="grid-2" id="tvshows-list"></div>
+
+    </section>
+
+    <!-- ANIME -->
+    <section class="row box red-glow">
+
+      <h2>Trending Anime</h2>
+
+      <div class="grid-2" id="anime-list"></div>
+
+    </section>
+
+  </main>
+
+  <!-- MOVIE PLAYER MODAL -->
+  <div class="modal" id="modal">
+
+    <div class="modal-content">
+
+      <span
+        class="close"
+        onclick="closeModal()"
+        aria-label="Close player"
+        role="button"
+        tabindex="0"
+      >✕</span>
+
+      <!-- VIDEO PLAYER -->
+      <div class="video-container"></div>
+
+      <!-- MOVIE INFORMATION -->
+      <div class="info-wrapper">
+
+        <div class="info-text">
+
+          <h2 id="modal-title"></h2>
+
+          <p id="modal-description"></p>
+
+        </div>
+
+      </div>
+
     </div>
 
   </div>
-</div>
 
 </body>
 </html>
