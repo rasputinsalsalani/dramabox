@@ -1,7 +1,7 @@
 
 /* =========================================
    MOVIEFLIXHD - COMPLETE HOME JAVASCRIPT
-   TMDB + MULTI-SERVER PLAYER
+   TMDB API + POSTER FIX + MULTI-SERVER PLAYER
 ========================================= */
 
 
@@ -9,54 +9,47 @@
    1. TMDB API CONFIGURATION
 ========================================= */
 
+// IMPORTANT: Decode the original Base64 string directly.
+// Do not reverse it before decoding.
 (function () {
   const encodedKey =
     "MWJkMjhkZWU5NTMzYTBiMWVkMjkyNTQ5ZDgyNmY4OGI=";
 
-  window.API_KEY = atob(
-    encodedKey.split("").reverse().join("")
-  );
+  window.API_KEY = atob(encodedKey);
 })();
 
 const BASE = "https://api.themoviedb.org/3";
 const IMG = "https://image.tmdb.org/t/p/w500";
 const BACKDROP = "https://image.tmdb.org/t/p/original";
 
+const PLACEHOLDER =
+  "https://placehold.co/500x750/151820/d8b66a?text=No+Poster";
+
+const POSTER_ERROR =
+  "https://placehold.co/500x750/151820/d8b66a?text=Poster+Unavailable";
+
 
 /* =========================================
    2. PLAYER SERVER CONFIGURATION
 ========================================= */
 
-/*
-  Ilagay dito ang authorized embed URLs
-  mula sa video provider na ginagamit mo.
-
-  Huwag maglagay ng random embed domains.
-  Kailangan suportado ng provider ang content.
-*/
+// Add only authorized video embed URLs here.
+// Empty URLs mean the server is not configured.
 
 const MOVIE_SOURCES = [
   {
     name: "Server 1",
-
     movie: (id) => "",
-
     tv: (id, season, episode) => ""
   },
-
   {
     name: "Server 2",
-
     movie: (id) => "",
-
     tv: (id, season, episode) => ""
   },
-
   {
     name: "Server 3",
-
     movie: (id) => "",
-
     tv: (id, season, episode) => ""
   }
 ];
@@ -75,7 +68,7 @@ let searchRequest = 0;
 
 
 /* =========================================
-   4. FETCH FUNCTION
+   4. TMDB API REQUEST
 ========================================= */
 
 async function fetchJSON(url) {
@@ -83,25 +76,46 @@ async function fetchJSON(url) {
     const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error("API request failed");
+      const errorData = await response.json().catch(() => null);
+
+      console.error(
+        "TMDB API Error:",
+        response.status,
+        errorData
+      );
+
+      return null;
     }
 
     return await response.json();
 
   } catch (error) {
-    console.error("Fetch error:", error);
+    console.error("Network error:", error);
     return null;
   }
 }
 
 
+function createTMDBUrl(endpoint, params = {}) {
+  const url = new URL(`${BASE}${endpoint}`);
+
+  url.searchParams.set("api_key", window.API_KEY);
+
+  Object.entries(params).forEach(([key, value]) => {
+    url.searchParams.set(key, value);
+  });
+
+  return url.toString();
+}
+
+
 /* =========================================
-   5. TMDB CATEGORY FUNCTIONS
+   5. FETCH MOVIES, TV AND ANIME
 ========================================= */
 
 async function fetchMovies() {
   const data = await fetchJSON(
-    `${BASE}/trending/movie/week?api_key=${API_KEY}`
+    createTMDBUrl("/trending/movie/week")
   );
 
   return data?.results || [];
@@ -110,7 +124,7 @@ async function fetchMovies() {
 
 async function fetchTV() {
   const data = await fetchJSON(
-    `${BASE}/trending/tv/week?api_key=${API_KEY}`
+    createTMDBUrl("/trending/tv/week")
   );
 
   return (data?.results || []).filter(item =>
@@ -121,7 +135,7 @@ async function fetchTV() {
 
 async function fetchAnime() {
   const data = await fetchJSON(
-    `${BASE}/trending/tv/week?api_key=${API_KEY}`
+    createTMDBUrl("/trending/tv/week")
   );
 
   return (data?.results || []).filter(item =>
@@ -131,28 +145,46 @@ async function fetchAnime() {
 
 
 /* =========================================
-   6. BANNER
+   6. POSTER IMAGE HANDLER
+========================================= */
+
+function setPosterImage(img, posterPath) {
+  img.alt = "Movie poster";
+  img.loading = "lazy";
+  img.decoding = "async";
+
+  img.onerror = function () {
+    this.onerror = null;
+    this.src = POSTER_ERROR;
+  };
+
+  img.src = posterPath
+    ? `${IMG}${posterPath}`
+    : PLACEHOLDER;
+}
+
+
+/* =========================================
+   7. FEATURED BANNER
 ========================================= */
 
 function displayBanner(item) {
-
   if (!item) return;
 
   const banner = document.getElementById("banner");
-
   const title = document.getElementById("banner-title");
-
-  const description =
-    document.getElementById("banner-desc");
+  const description = document.getElementById("banner-desc");
 
   if (!banner || !title || !description) return;
 
-  banner.style.backgroundImage =
-    item.backdrop_path
-      ? `url("${BACKDROP}${item.backdrop_path}")`
-      : "none";
+  if (item.backdrop_path) {
+    banner.style.backgroundImage =
+      `url("${BACKDROP}${item.backdrop_path}")`;
+  } else {
+    banner.style.backgroundImage = "none";
+  }
 
-  title.textContent = item.title || item.name || "";
+  title.textContent = item.title || item.name || "Featured";
 
   description.textContent =
     item.overview || "Discover trending movies and shows.";
@@ -172,51 +204,52 @@ function openFromBanner() {
 
 
 /* =========================================
-   7. DISPLAY MOVIE LIST
+   8. DISPLAY MOVIE POSTERS
 ========================================= */
 
 function displayList(items, elementId) {
-
   const container = document.getElementById(elementId);
 
   if (!container) return;
 
   container.innerHTML = "";
 
+  if (!items || !items.length) {
+    container.innerHTML =
+      '<p class="player-message">No movies available right now.</p>';
+    return;
+  }
+
   items.slice(0, 18).forEach(item => {
-
-    if (!item.poster_path) return;
-
     const card = document.createElement("div");
-
     card.className = "movie-card";
 
     const img = document.createElement("img");
 
-    img.src = IMG + item.poster_path;
     img.alt = item.title || item.name || "Movie poster";
-    img.loading = "lazy";
 
-    img.onclick = () => showDetails({
-      ...item,
-      media_type:
-        item.media_type ||
-        (item.title ? "movie" : "tv")
-    });
+    setPosterImage(img, item.poster_path);
+
+    img.onclick = () => {
+      showDetails({
+        ...item,
+        media_type:
+          item.media_type ||
+          (item.title ? "movie" : "tv")
+      });
+    };
 
     card.appendChild(img);
-
     container.appendChild(card);
   });
 }
 
 
 /* =========================================
-   8. PLAYER FUNCTIONS
+   9. MEDIA TYPE
 ========================================= */
 
 function getMediaType(item) {
-
   if (item.media_type) {
     return item.media_type;
   }
@@ -225,24 +258,29 @@ function getMediaType(item) {
 }
 
 
+/* =========================================
+   10. SHOW MOVIE DETAILS
+========================================= */
+
 function showDetails(item) {
+  if (!item) return;
 
   currentItem = item;
   currentServer = 0;
 
   const modal = document.getElementById("modal");
-
   const title = document.getElementById("modal-title");
-
-  const description =
-    document.getElementById("modal-description");
+  const description = document.getElementById("modal-description");
+  const heading = document.getElementById("player-heading-title");
 
   if (!modal) return;
+
+  const itemTitle = item.title || item.name || "Untitled";
 
   modal.style.display = "flex";
 
   if (title) {
-    title.textContent = item.title || item.name || "";
+    title.textContent = itemTitle;
   }
 
   if (description) {
@@ -250,35 +288,33 @@ function showDetails(item) {
       item.overview || "No description available.";
   }
 
+  if (heading) {
+    heading.textContent = itemTitle;
+  }
+
   loadMovieServer();
 }
 
 
 /* =========================================
-   9. LOAD SELECTED SERVER
+   11. LOAD SELECTED SERVER
 ========================================= */
 
 function loadMovieServer() {
-
-  const container =
-    document.querySelector(".video-container");
+  const container = document.querySelector(".video-container");
 
   if (!container || !currentItem) return;
 
   container.innerHTML = "";
 
   const mediaType = getMediaType(currentItem);
-
   const source = MOVIE_SOURCES[currentServer];
 
   if (!source) {
-
-    container.innerHTML = `
-      <div class="player-message">
-        <h3>No more servers available</h3>
-        <p>Please try again later.</p>
-      </div>
-    `;
+    showPlayerMessage(
+      "No more servers available",
+      "Please try again later."
+    );
 
     updateServerName("No server");
     return;
@@ -287,40 +323,31 @@ function loadMovieServer() {
   let url = "";
 
   if (mediaType === "movie") {
-
     url = source.movie(currentItem.id);
 
   } else if (mediaType === "tv") {
-
     url = source.tv(currentItem.id, 1, 1);
 
   } else {
-
-    container.innerHTML = `
-      <div class="player-message">
-        <h3>Unsupported media type</h3>
-      </div>
-    `;
+    showPlayerMessage(
+      "Unsupported media type",
+      "This content type is not supported."
+    );
 
     return;
   }
 
   if (!url) {
-
-    container.innerHTML = `
-      <div class="player-message">
-        <h3>${source.name} is not configured</h3>
-        <p>Add an authorized embed URL in home.js.</p>
-      </div>
-    `;
+    showPlayerMessage(
+      `${source.name} is not configured`,
+      "Add an authorized embed URL in home.js."
+    );
 
     updateServerName(source.name);
     return;
   }
 
-  // Only allow HTTPS embed URLs.
   try {
-
     const parsedURL = new URL(url);
 
     if (parsedURL.protocol !== "https:") {
@@ -328,13 +355,12 @@ function loadMovieServer() {
     }
 
   } catch (error) {
+    showPlayerMessage(
+      "Invalid embed URL",
+      "Please check your configured server URL."
+    );
 
-    container.innerHTML = `
-      <div class="player-message">
-        <h3>Invalid embed URL</h3>
-      </div>
-    `;
-
+    updateServerName(source.name);
     return;
   }
 
@@ -342,14 +368,9 @@ function loadMovieServer() {
 
   iframe.src = url;
   iframe.title = "MovieFlixHD Video Player";
-
-  iframe.allow =
-    "autoplay; fullscreen; picture-in-picture";
-
+  iframe.allow = "autoplay; fullscreen; picture-in-picture";
   iframe.allowFullscreen = true;
-
-  iframe.referrerPolicy =
-    "strict-origin-when-cross-origin";
+  iframe.referrerPolicy = "strict-origin-when-cross-origin";
 
   container.appendChild(iframe);
 
@@ -358,13 +379,38 @@ function loadMovieServer() {
 
 
 /* =========================================
-   10. SERVER NAME
+   12. PLAYER MESSAGE
+========================================= */
+
+function showPlayerMessage(title, message) {
+  const container = document.querySelector(".video-container");
+
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "player-message";
+
+  const heading = document.createElement("h3");
+  heading.textContent = title;
+
+  const paragraph = document.createElement("p");
+  paragraph.textContent = message;
+
+  wrapper.appendChild(heading);
+  wrapper.appendChild(paragraph);
+
+  container.appendChild(wrapper);
+}
+
+
+/* =========================================
+   13. SERVER NAME
 ========================================= */
 
 function updateServerName(name) {
-
-  const element =
-    document.getElementById("server-name");
+  const element = document.getElementById("server-name");
 
   if (element) {
     element.textContent = name;
@@ -373,17 +419,14 @@ function updateServerName(name) {
 
 
 /* =========================================
-   11. NEXT SERVER
+   14. NEXT SERVER
 ========================================= */
 
 function nextServer() {
-
   if (!currentItem) return;
 
   if (currentServer >= MOVIE_SOURCES.length - 1) {
-
     alert("No more servers available.");
-
     return;
   }
 
@@ -394,15 +437,12 @@ function nextServer() {
 
 
 /* =========================================
-   12. CLOSE MODAL
+   15. CLOSE MODAL
 ========================================= */
 
 function closeModal() {
-
   const modal = document.getElementById("modal");
-
-  const container =
-    document.querySelector(".video-container");
+  const container = document.querySelector(".video-container");
 
   if (modal) {
     modal.style.display = "none";
@@ -418,67 +458,59 @@ function closeModal() {
 
 
 /* =========================================
-   13. MODAL BACKDROP CLICK
+   16. MODAL BACKDROP CLICK
 ========================================= */
 
-document.addEventListener("click", function(event) {
-
+document.addEventListener("click", function (event) {
   const modal = document.getElementById("modal");
 
   if (modal && event.target === modal) {
     closeModal();
   }
-
 });
 
 
 /* =========================================
-   14. ESCAPE KEY
+   17. ESCAPE KEY
 ========================================= */
 
-document.addEventListener("keydown", function(event) {
-
+document.addEventListener("keydown", function (event) {
   if (event.key === "Escape") {
     closeModal();
   }
-
 });
 
 
 /* =========================================
-   15. SEARCH TMDB
+   18. SEARCH MOVIES AND TV
 ========================================= */
 
 async function searchTMDB(query) {
-
   clearTimeout(searchTimeout);
 
-  const section =
-    document.getElementById("search-section");
-
-  const results =
-    document.getElementById("search-results");
+  const section = document.getElementById("search-section");
+  const results = document.getElementById("search-results");
 
   if (!section || !results) return;
 
-  if (!query.trim()) {
+  const searchTerm = query.trim();
 
+  if (!searchTerm) {
+    searchRequest++;
     section.hidden = true;
     results.innerHTML = "";
-
     return;
   }
 
   searchTimeout = setTimeout(async () => {
-
     const requestId = ++searchRequest;
 
-    const url = new URL(`${BASE}/search/multi`);
-
-    url.searchParams.set("api_key", API_KEY);
-    url.searchParams.set("query", query.trim());
-
-    const data = await fetchJSON(url.toString());
+    const data = await fetchJSON(
+      createTMDBUrl("/search/multi", {
+        query: searchTerm,
+        include_adult: "false"
+      })
+    );
 
     if (requestId !== searchRequest) return;
 
@@ -486,30 +518,24 @@ async function searchTMDB(query) {
     results.innerHTML = "";
 
     const items = (data?.results || []).filter(item =>
-      item.poster_path &&
       ["movie", "tv"].includes(item.media_type)
     );
 
     if (!items.length) {
-
-      results.innerHTML =
-        "<p>No results found.</p>";
-
+      results.innerHTML = "<p>No results found.</p>";
       return;
     }
 
     items.forEach(item => {
-
       const img = document.createElement("img");
 
-      img.src = IMG + item.poster_path;
-      img.alt = item.title || item.name || "Movie";
-      img.loading = "lazy";
+      img.alt = item.title || item.name || "Movie poster";
+
+      setPosterImage(img, item.poster_path);
 
       img.onclick = () => showDetails(item);
 
       results.appendChild(img);
-
     });
 
   }, 400);
@@ -517,39 +543,55 @@ async function searchTMDB(query) {
 
 
 /* =========================================
-   16. INITIALIZE WEBSITE
+   19. INITIALIZE WEBSITE
 ========================================= */
 
 async function init() {
-
   console.log("MovieFlixHD initializing...");
 
-  const [
-    movies,
-    tvShows,
-    anime
-  ] = await Promise.all([
+  const movieContainer = document.getElementById("movies-list");
+  const tvContainer = document.getElementById("tvshows-list");
+  const animeContainer = document.getElementById("anime-list");
+
+  if (movieContainer) {
+    movieContainer.innerHTML = "<p>Loading movies...</p>";
+  }
+
+  if (tvContainer) {
+    tvContainer.innerHTML = "<p>Loading TV shows...</p>";
+  }
+
+  if (animeContainer) {
+    animeContainer.innerHTML = "<p>Loading anime...</p>";
+  }
+
+  const [movies, tvShows, anime] = await Promise.all([
     fetchMovies(),
     fetchTV(),
     fetchAnime()
   ]);
 
-  if (movies.length) {
+  if (movies.length > 0) {
     displayBanner(movies[0]);
   }
 
   displayList(movies, "movies-list");
-
   displayList(tvShows, "tvshows-list");
-
   displayList(anime, "anime-list");
 
-  console.log("MovieFlixHD loaded successfully.");
+  console.log("MovieFlixHD loaded.");
+  console.log("Movies:", movies.length);
+  console.log("TV Shows:", tvShows.length);
+  console.log("Anime:", anime.length);
 }
 
 
 /* =========================================
-   17. START WEBSITE
+   20. START WEBSITE
 ========================================= */
 
-document.addEventListener("DOMContentLoaded", init);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
