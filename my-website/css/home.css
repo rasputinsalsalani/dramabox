@@ -1,6 +1,8 @@
 
+
 /* =========================================
    MOVIEFLIXHD — PREMIUM CINEMATIC THEME
+   GOLD EDITION + MULTI-SERVER PLAYER
 ========================================= */
 
 :root {
@@ -183,8 +185,6 @@ body {
   font-size: 14px;
   line-height: 1.7;
 }
-
-/* BANNER BUTTON */
 
 .banner-play {
   margin-top: 18px;
@@ -451,6 +451,10 @@ body {
   font-weight: 650;
 }
 
+.server-info strong {
+  color: var(--gold-light);
+}
+
 .server-indicator {
   width: 8px;
   height: 8px;
@@ -458,6 +462,55 @@ body {
   background: var(--gold);
   box-shadow: 0 0 10px rgba(216,182,106,.65);
 }
+
+/* =========================================
+   MULTI-SERVER SELECTOR
+========================================= */
+
+.server-selector {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.server-btn {
+  padding: 9px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+  transition: all .25s ease;
+  cursor: pointer;
+}
+
+.server-btn:hover {
+  color: var(--gold-light);
+  border-color: var(--gold);
+  background: rgba(216,182,106,.08);
+}
+
+.server-btn.active {
+  color: #111;
+  background: linear-gradient(
+    135deg,
+    var(--gold-light),
+    var(--gold-dark)
+  );
+  border-color: var(--gold);
+  box-shadow: 0 4px 15px rgba(216,182,106,.2);
+}
+
+.server-btn:focus-visible {
+  outline: 2px solid var(--gold-light);
+  outline-offset: 3px;
+}
+
+/* =========================================
+   NEXT SERVER BUTTON
+========================================= */
 
 .next-server-btn {
   padding: 10px 17px;
@@ -522,7 +575,7 @@ body {
 }
 
 /* =========================================
-   BUTTONS AND FOCUS
+   GLOBAL BUTTONS AND FOCUS
 ========================================= */
 
 button {
@@ -735,7 +788,20 @@ input:focus-visible,
   }
 
   .player-controls {
+    align-items: flex-start;
     padding: 12px 3px;
+    gap: 10px;
+  }
+
+  .server-selector {
+    width: 100%;
+    gap: 7px;
+  }
+
+  .server-btn {
+    flex: 1;
+    padding: 9px 10px;
+    font-size: 11px;
   }
 
   .next-server-btn {
@@ -807,4 +873,3 @@ input:focus-visible,
     animation-duration: .01ms !important;
   }
 }
-
