@@ -27,7 +27,7 @@ const POSTER_ERROR =
 /* 2. AD REDIRECT SETTINGS */
 
 // Palitan ito kapag mayroon ka nang advertising URL.
-const AD_REDIRECT_URL = "PLACE YOUR ADS HERE";
+const AD_REDIRECT_URL = "https://directyp.org/4/02b9737bd4da1e3a14a820f0ce61a20d";
 
 /* 3. PLAYER SERVER CONFIGURATION */
 
