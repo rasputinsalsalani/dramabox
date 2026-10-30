@@ -1,5 +1,4 @@
 
-
 /* =========================================
    MOVIEFLIXHD - COMPLETE HOME JAVASCRIPT
    TMDB API + POSTER FIX + MULTI-SERVER PLAYER
@@ -32,22 +31,21 @@ const POSTER_ERROR =
    2. PLAYER SERVER CONFIGURATION
 ========================================= */
 
-// Add your authorized HTTPS embed URLs here.
-// Leave empty if a server is not configured.
-
 const MOVIE_SOURCES = [
   {
-    name: "Server 1",
+    name: "VidSrc",
+    movie: (id) =>
+      `https://vidsrc.sh/embed/movie/${id}`,
+    tv: (id, season, episode) =>
+      `https://vidsrc.sh/embed/tv/${id}/${season}/${episode}`
+  },
+  {
+    name: "VidKing",
     movie: (id) => "",
     tv: (id, season, episode) => ""
   },
   {
-    name: "Server 2",
-    movie: (id) => "",
-    tv: (id, season, episode) => ""
-  },
-  {
-    name: "Server 3",
+    name: "EmbedWave",
     movie: (id) => "",
     tv: (id, season, episode) => ""
   }
@@ -305,7 +303,6 @@ function loadMovieServer() {
 
   if (!container || !currentItem) return;
 
-  // Remove previous player and iframe.
   container.innerHTML = "";
 
   const mediaType = getMediaType(currentItem);
@@ -328,7 +325,6 @@ function loadMovieServer() {
       url = source.movie(currentItem.id);
 
     } else if (mediaType === "tv") {
-      // Default episode: Season 1, Episode 1.
       url = source.tv(currentItem.id, 1, 1);
 
     } else {
@@ -353,18 +349,16 @@ function loadMovieServer() {
     return;
   }
 
-  // Server has no configured URL.
   if (!url || typeof url !== "string") {
     showPlayerMessage(
       `${source.name} is not configured`,
-      "Add an authorized HTTPS embed URL in home.js."
+      "This server is not yet connected."
     );
 
     updateServerName(source.name);
     return;
   }
 
-  // Validate URL.
   let parsedURL;
 
   try {
@@ -384,7 +378,6 @@ function loadMovieServer() {
     return;
   }
 
-  // Create iframe player.
   const iframe = document.createElement("iframe");
 
   iframe.src = parsedURL.href;
@@ -440,7 +433,6 @@ function updateServerName(name) {
       name || source?.name || "Unavailable";
   }
 
-  // Update active server button.
   document.querySelectorAll(".server-btn").forEach(button => {
     const buttonIndex = Number(button.dataset.server);
     const isActive = buttonIndex === currentServer;
@@ -479,11 +471,8 @@ function selectServer(index) {
 function nextServer() {
   if (!currentItem) return;
 
-  if (!MOVIE_SOURCES.length) {
-    return;
-  }
+  if (!MOVIE_SOURCES.length) return;
 
-  // Cycle through all servers.
   currentServer =
     (currentServer + 1) % MOVIE_SOURCES.length;
 
@@ -505,7 +494,6 @@ function closeModal() {
   }
 
   if (container) {
-    // Removes iframe and stops its playback.
     container.innerHTML = "";
   }
 
@@ -571,7 +559,6 @@ async function searchTMDB(query) {
       })
     );
 
-    // Ignore outdated search responses.
     if (requestId !== searchRequest) return;
 
     section.hidden = false;
@@ -655,4 +642,3 @@ if (document.readyState === "loading") {
 } else {
   init();
 }
-
