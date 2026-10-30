@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -20,12 +19,9 @@
 
 <body>
 
-  <!-- =========================
-       NAVIGATION
-  ========================== -->
+  <!-- NAVIGATION -->
 
   <header class="navbar">
-
     <div class="nav-inner">
 
       <img
@@ -35,7 +31,6 @@
       >
 
       <div class="search-wrapper">
-
         <input
           id="search-input"
           type="search"
@@ -44,17 +39,13 @@
           aria-label="Search movies and TV shows"
           oninput="searchTMDB(this.value)"
         >
-
       </div>
 
     </div>
-
   </header>
 
 
-  <!-- =========================
-       HERO BANNER
-  ========================== -->
+  <!-- HERO BANNER -->
 
   <section class="banner" id="banner">
 
@@ -86,9 +77,7 @@
   </section>
 
 
-  <!-- =========================
-       MAIN CONTENT
-  ========================== -->
+  <!-- MAIN CONTENT -->
 
   <main>
 
@@ -102,10 +91,7 @@
 
       <h2>Search Results</h2>
 
-      <div
-        class="grid"
-        id="search-results"
-      ></div>
+      <div class="grid" id="search-results"></div>
 
     </section>
 
@@ -116,10 +102,7 @@
 
       <h2>Trending Movies</h2>
 
-      <div
-        class="grid-2"
-        id="movies-list"
-      ></div>
+      <div class="grid-2" id="movies-list"></div>
 
     </section>
 
@@ -130,10 +113,7 @@
 
       <h2>Popular TV Shows</h2>
 
-      <div
-        class="grid-2"
-        id="tvshows-list"
-      ></div>
+      <div class="grid-2" id="tvshows-list"></div>
 
     </section>
 
@@ -144,19 +124,14 @@
 
       <h2>Trending Anime</h2>
 
-      <div
-        class="grid-2"
-        id="anime-list"
-      ></div>
+      <div class="grid-2" id="anime-list"></div>
 
     </section>
 
   </main>
 
 
-  <!-- =========================
-       MOVIE PLAYER MODAL
-  ========================== -->
+  <!-- MOVIE PLAYER MODAL -->
 
   <div
     class="modal"
@@ -214,9 +189,56 @@
 
           <span class="server-indicator"></span>
 
-          <span id="server-name">Server 1</span>
+          <span>
+            Active:
+            <strong id="server-name">Server 1</strong>
+          </span>
 
         </div>
+
+
+        <!-- SERVER SELECTOR -->
+
+        <div
+          class="server-selector"
+          role="group"
+          aria-label="Choose video server"
+        >
+
+          <button
+            type="button"
+            class="server-btn active"
+            data-server="0"
+            aria-pressed="true"
+            onclick="selectServer(0)"
+          >
+            Server 1
+          </button>
+
+          <button
+            type="button"
+            class="server-btn"
+            data-server="1"
+            aria-pressed="false"
+            onclick="selectServer(1)"
+          >
+            Server 2
+          </button>
+
+          <button
+            type="button"
+            class="server-btn"
+            data-server="2"
+            aria-pressed="false"
+            onclick="selectServer(2)"
+          >
+            Server 3
+          </button>
+
+        </div>
+
+
+        <!-- NEXT SERVER -->
 
         <button
           type="button"
@@ -248,9 +270,7 @@
   </div>
 
 
-  <!-- =========================
-       FOOTER
-  ========================== -->
+  <!-- FOOTER -->
 
   <footer class="footer">
 
