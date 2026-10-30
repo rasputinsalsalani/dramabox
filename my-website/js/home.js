@@ -1,14 +1,11 @@
 
 /* =========================================
    MOVIEFLIXHD — COMPLETE HOME JAVASCRIPT
-   TMDB API + PREMIUM CARDS + PLAY NOW
+   TMDB + PREMIUM FEATURED + PLAY NOW
    AD REDIRECT + 3 SERVER PLAYER
 ========================================= */
 
-
-/* =========================================
-   1. TMDB API CONFIGURATION
-========================================= */
+/* 1. TMDB API CONFIGURATION */
 
 (function () {
   const encodedKey =
@@ -27,51 +24,32 @@ const PLACEHOLDER =
 const POSTER_ERROR =
   "https://placehold.co/500x750/151820/ffffff?text=Poster+Unavailable";
 
+/* 2. AD REDIRECT SETTINGS */
 
-/* =========================================
-   2. AD REDIRECT SETTINGS
-========================================= */
-
-// PLACE YOUR ADS HERE
-// Palitan ang value kapag mayroon ka nang advertising URL.
-
+// Palitan ito kapag mayroon ka nang advertising URL.
 const AD_REDIRECT_URL = "PLACE YOUR ADS HERE";
 
-
-/* =========================================
-   3. PLAYER SERVER CONFIGURATION
-========================================= */
+/* 3. PLAYER SERVER CONFIGURATION */
 
 const MOVIE_SOURCES = [
   {
-    movie: (id) =>
-      `https://vidsrc.sh/embed/movie/${id}`,
-
+    movie: id => `https://vidsrc.sh/embed/movie/${id}`,
     tv: (id, season, episode) =>
       `https://vidsrc.sh/embed/tv/${id}/${season}/${episode}`
   },
-
   {
-    movie: (id) =>
-      `https://embed.vidrift.net/embed/movie/${id}`,
-
+    movie: id => `https://embed.vidrift.net/embed/movie/${id}`,
     tv: (id, season, episode) =>
       `https://embed.vidrift.net/embed/tv/${id}/${season}/${episode}`
   },
-
   {
-    movie: (id) =>
-      `https://embedwave.cc/embed/movie/${id}`,
-
+    movie: id => `https://embedwave.cc/embed/movie/${id}`,
     tv: (id, season, episode) =>
       `https://embedwave.cc/embed/tv/${id}/${season}/${episode}`
   }
 ];
 
-
-/* =========================================
-   4. GLOBAL VARIABLES
-========================================= */
+/* 4. GLOBAL VARIABLES */
 
 let currentItem = null;
 let bannerItem = null;
@@ -81,10 +59,7 @@ let playerUnlocked = false;
 let searchTimeout = null;
 let searchRequest = 0;
 
-
-/* =========================================
-   5. TMDB API REQUEST
-========================================= */
+/* 5. TMDB API REQUEST */
 
 async function fetchJSON(url) {
   try {
@@ -110,7 +85,6 @@ async function fetchJSON(url) {
   }
 }
 
-
 function createTMDBUrl(endpoint, params = {}) {
   const url = new URL(`${BASE}${endpoint}`);
 
@@ -123,10 +97,7 @@ function createTMDBUrl(endpoint, params = {}) {
   return url.toString();
 }
 
-
-/* =========================================
-   6. FETCH MOVIES, TV AND ANIME
-========================================= */
+/* 6. FETCH MOVIES, TV AND ANIME */
 
 async function fetchMovies() {
   const data = await fetchJSON(
@@ -135,7 +106,6 @@ async function fetchMovies() {
 
   return data?.results || [];
 }
-
 
 async function fetchTV() {
   const data = await fetchJSON(
@@ -147,7 +117,6 @@ async function fetchTV() {
   );
 }
 
-
 async function fetchAnime() {
   const data = await fetchJSON(
     createTMDBUrl("/trending/tv/week")
@@ -158,10 +127,7 @@ async function fetchAnime() {
   );
 }
 
-
-/* =========================================
-   7. POSTER IMAGE HANDLER
-========================================= */
+/* 7. POSTER IMAGE HANDLER */
 
 function setPosterImage(img, posterPath) {
   img.alt = "Movie poster";
@@ -178,17 +144,13 @@ function setPosterImage(img, posterPath) {
     : PLACEHOLDER;
 }
 
-
-/* =========================================
-   8. MOVIE METADATA
-========================================= */
+/* 8. MOVIE METADATA */
 
 function getItemYear(item) {
   const date = item.release_date || item.first_air_date || "";
 
   return date ? date.substring(0, 4) : "N/A";
 }
-
 
 function getItemRating(item) {
   const rating = Number(item.vote_average);
@@ -198,25 +160,27 @@ function getItemRating(item) {
     : "N/A";
 }
 
-
-function getShortOverview(text, maxLength = 180) {
+function getShortOverview(text, maxLength = 145) {
   if (!text) {
     return "Discover trending movies and shows on MovieFlixHD.";
   }
 
-  const cleanText = text.trim();
+  const cleanText = text.trim().replace(/\s+/g, " ");
 
   if (cleanText.length <= maxLength) {
     return cleanText;
   }
 
-  return cleanText.substring(0, maxLength).trimEnd() + "...";
+  const shortened = cleanText.substring(0, maxLength);
+  const lastSpace = shortened.lastIndexOf(" ");
+
+  return shortened.substring(
+    0,
+    lastSpace > 90 ? lastSpace : maxLength
+  ).trimEnd() + "...";
 }
 
-
-/* =========================================
-   9. FEATURED MOVIE BANNER
-========================================= */
+/* 9. FEATURED MOVIE BANNER */
 
 function displayBanner(item) {
   if (!item) return;
@@ -224,54 +188,65 @@ function displayBanner(item) {
   const banner = document.getElementById("banner");
   const title = document.getElementById("banner-title");
   const description = document.getElementById("banner-desc");
+  const meta = document.getElementById("banner-meta");
 
   if (!banner || !title || !description) return;
 
+  // Use the movie backdrop as the full banner background.
   if (item.backdrop_path) {
+    const backdropURL =
+      `${BACKDROP}${item.backdrop_path}`;
+
     banner.style.backgroundImage =
-      `url("${BACKDROP}${item.backdrop_path}")`;
+      `url("${backdropURL}")`;
+  } else if (item.poster_path) {
+    // Fallback if no backdrop is available.
+    banner.style.backgroundImage =
+      `url("${IMG}${item.poster_path}")`;
   } else {
     banner.style.backgroundImage = "none";
   }
 
-  title.textContent = item.title || item.name || "Featured Movie";
+  // Movie title.
+  title.textContent =
+    item.title || item.name || "Featured Movie";
 
-  description.textContent = getShortOverview(item.overview, 190);
+  // Short description.
+  description.textContent =
+    getShortOverview(item.overview, 145);
 
+  // Featured label.
   const label = banner.querySelector(".banner-label");
 
   if (label) {
     label.textContent = "FEATURED MOVIE";
   }
 
-  const meta = document.getElementById("banner-meta");
-
+  // Aligned year and rating.
   if (meta) {
-    meta.innerHTML = `
-      <span>${getItemYear(item)}</span>
-      <span class="rating">★ ${getItemRating(item)}</span>
-    `;
+    meta.innerHTML = "";
+
+    const year = document.createElement("span");
+    year.textContent = getItemYear(item);
+
+    const divider = document.createElement("span");
+    divider.className = "meta-divider";
+
+    const rating = document.createElement("span");
+    rating.className = "rating";
+    rating.textContent = `★ ${getItemRating(item)}`;
+
+    meta.appendChild(year);
+    meta.appendChild(divider);
+    meta.appendChild(rating);
   }
 
-  const poster = document.getElementById("banner-poster");
-
-  if (poster) {
-    poster.innerHTML = "";
-
-    if (item.poster_path) {
-      const image = document.createElement("img");
-      setPosterImage(image, item.poster_path);
-      image.alt = item.title || item.name || "Featured poster";
-      poster.appendChild(image);
-    }
-  }
-
+  // Save featured movie for Watch Now.
   bannerItem = {
     ...item,
     media_type: item.media_type || "movie"
   };
 }
-
 
 function openFromBanner() {
   if (bannerItem) {
@@ -279,18 +254,17 @@ function openFromBanner() {
   }
 }
 
-
-/* =========================================
-   10. CREATE MOVIE CARD
-========================================= */
+/* 10. CREATE MOVIE CARD */
 
 function createMovieCard(item) {
   const card = document.createElement("div");
+
   card.className = "movie-card";
   card.tabIndex = 0;
   card.setAttribute("role", "button");
 
-  const title = item.title || item.name || "Untitled";
+  const title =
+    item.title || item.name || "Untitled";
 
   const image = document.createElement("img");
   image.alt = `${title} poster`;
@@ -342,10 +316,7 @@ function createMovieCard(item) {
   return card;
 }
 
-
-/* =========================================
-   11. DISPLAY MOVIE LIST
-========================================= */
+/* 11. DISPLAY MOVIE LIST */
 
 function displayList(items, elementId) {
   const container = document.getElementById(elementId);
@@ -365,10 +336,7 @@ function displayList(items, elementId) {
   });
 }
 
-
-/* =========================================
-   12. MEDIA TYPE
-========================================= */
+/* 12. MEDIA TYPE */
 
 function getMediaType(item) {
   if (item.media_type) {
@@ -378,10 +346,7 @@ function getMediaType(item) {
   return item.title ? "movie" : "tv";
 }
 
-
-/* =========================================
-   13. SHOW MOVIE DETAILS
-========================================= */
+/* 13. SHOW MOVIE DETAILS */
 
 function showDetails(item) {
   if (!item) return;
@@ -392,12 +357,15 @@ function showDetails(item) {
 
   const modal = document.getElementById("modal");
   const title = document.getElementById("modal-title");
-  const description = document.getElementById("modal-description");
-  const heading = document.getElementById("player-heading-title");
+  const description =
+    document.getElementById("modal-description");
+  const heading =
+    document.getElementById("player-heading-title");
 
   if (!modal) return;
 
-  const itemTitle = item.title || item.name || "Untitled";
+  const itemTitle =
+    item.title || item.name || "Untitled";
 
   modal.style.display = "flex";
 
@@ -419,20 +387,19 @@ function showDetails(item) {
   showPlayNowScreen();
 }
 
-
-/* =========================================
-   14. PLAY NOW SCREEN
-========================================= */
+/* 14. PLAY NOW SCREEN */
 
 function showPlayNowScreen() {
-  const container = document.querySelector(".video-container");
+  const container =
+    document.querySelector(".video-container");
 
   if (!container) return;
 
   container.innerHTML = "";
 
   const wrapper = document.createElement("div");
-  wrapper.className = "player-message play-now-message";
+  wrapper.className =
+    "player-message play-now-message";
 
   const paragraph = document.createElement("p");
   paragraph.textContent = "Click to start watching";
@@ -441,6 +408,7 @@ function showPlayNowScreen() {
   button.className = "play-now-btn";
   button.type = "button";
   button.textContent = "▶ PLAY NOW";
+
   button.addEventListener("click", unlockPlayer);
 
   wrapper.appendChild(paragraph);
@@ -449,16 +417,10 @@ function showPlayNowScreen() {
   container.appendChild(wrapper);
 }
 
-
-/* =========================================
-   15. UNLOCK PLAYER AND OPEN AD
-========================================= */
+/* 15. UNLOCK PLAYER AND OPEN AD */
 
 function unlockPlayer() {
   if (!currentItem || playerUnlocked) return;
-
-  // Open ad link directly from the user's click.
-  // Replace PLACE YOUR ADS HERE with your actual ad URL.
 
   const adURL = AD_REDIRECT_URL.trim();
 
@@ -469,7 +431,10 @@ function unlockPlayer() {
     try {
       const parsedAdURL = new URL(adURL);
 
-      if (parsedAdURL.protocol === "https:" || parsedAdURL.protocol === "http:") {
+      if (
+        parsedAdURL.protocol === "https:" ||
+        parsedAdURL.protocol === "http:"
+      ) {
         const adWindow = window.open(
           parsedAdURL.href,
           "_blank",
@@ -477,15 +442,27 @@ function unlockPlayer() {
         );
 
         if (!adWindow) {
-          alert("Please allow pop-ups to open the advertising page.");
+          alert(
+            "Please allow pop-ups to open the advertising page."
+          );
         }
+      } else {
+        alert("Please use a valid HTTP or HTTPS ad URL.");
+        return;
       }
+
     } catch (error) {
       console.error("Invalid advertising URL:", error);
-      alert("The advertising URL is not valid. Please check the AD REDIRECT SETTINGS.");
+      alert(
+        "The advertising URL is not valid. Please check the AD REDIRECT SETTINGS."
+      );
+      return;
     }
+
   } else {
-    console.info("Ad URL not configured. PLACE YOUR ADS HERE.");
+    console.info(
+      "Ad URL not configured. PLACE YOUR ADS HERE."
+    );
   }
 
   playerUnlocked = true;
@@ -495,26 +472,22 @@ function unlockPlayer() {
   loadMovieServer();
 }
 
-
-/* =========================================
-   16. SHOW / HIDE SERVER CONTROLS
-========================================= */
+/* 16. SHOW / HIDE SERVER CONTROLS */
 
 function setServerControlsVisible(visible) {
-  const controls = document.querySelector(".player-controls");
+  const controls =
+    document.querySelector(".player-controls");
 
   if (controls) {
     controls.hidden = !visible;
   }
 }
 
-
-/* =========================================
-   17. LOAD SELECTED SERVER
-========================================= */
+/* 17. LOAD SELECTED SERVER */
 
 function loadMovieServer() {
-  const container = document.querySelector(".video-container");
+  const container =
+    document.querySelector(".video-container");
 
   if (!container || !currentItem || !playerUnlocked) return;
 
@@ -593,22 +566,22 @@ function loadMovieServer() {
 
   iframe.src = parsedURL.href;
   iframe.title = "MovieFlixHD Video Player";
-  iframe.allow = "autoplay; fullscreen; picture-in-picture";
+  iframe.allow =
+    "autoplay; fullscreen; picture-in-picture";
   iframe.allowFullscreen = true;
-  iframe.referrerPolicy = "strict-origin-when-cross-origin";
+  iframe.referrerPolicy =
+    "strict-origin-when-cross-origin";
 
   container.appendChild(iframe);
 
   updateServerName();
 }
 
-
-/* =========================================
-   18. PLAYER MESSAGE
-========================================= */
+/* 18. PLAYER MESSAGE */
 
 function showPlayerMessage(title, message) {
-  const container = document.querySelector(".video-container");
+  const container =
+    document.querySelector(".video-container");
 
   if (!container) return;
 
@@ -629,13 +602,11 @@ function showPlayerMessage(title, message) {
   container.appendChild(wrapper);
 }
 
-
-/* =========================================
-   19. UPDATE ACTIVE SERVER LABEL
-========================================= */
+/* 19. UPDATE ACTIVE SERVER LABEL */
 
 function updateServerName() {
-  const serverName = document.getElementById("server-name");
+  const serverName =
+    document.getElementById("server-name");
 
   if (serverName) {
     serverName.textContent =
@@ -643,24 +614,30 @@ function updateServerName() {
   }
 
   document.querySelectorAll(".server-btn").forEach(button => {
-    const buttonIndex = Number(button.dataset.server);
-    const isActive = buttonIndex === currentServer;
+    const buttonIndex =
+      Number(button.dataset.server);
+
+    const isActive =
+      buttonIndex === currentServer;
 
     button.classList.toggle("active", isActive);
-    button.setAttribute("aria-pressed", String(isActive));
+    button.setAttribute(
+      "aria-pressed",
+      String(isActive)
+    );
   });
 }
 
-
-/* =========================================
-   20. SELECT SERVER
-========================================= */
+/* 20. SELECT SERVER */
 
 function selectServer(index) {
   if (!playerUnlocked || !currentItem) return;
   if (!Number.isInteger(index)) return;
 
-  if (index < 0 || index >= MOVIE_SOURCES.length) {
+  if (
+    index < 0 ||
+    index >= MOVIE_SOURCES.length
+  ) {
     return;
   }
 
@@ -670,10 +647,7 @@ function selectServer(index) {
   loadMovieServer();
 }
 
-
-/* =========================================
-   21. NEXT SERVER
-========================================= */
+/* 21. NEXT SERVER */
 
 function nextServer() {
   if (!playerUnlocked || !currentItem) return;
@@ -686,14 +660,12 @@ function nextServer() {
   loadMovieServer();
 }
 
-
-/* =========================================
-   22. CLOSE MODAL
-========================================= */
+/* 22. CLOSE MODAL */
 
 function closeModal() {
   const modal = document.getElementById("modal");
-  const container = document.querySelector(".video-container");
+  const container =
+    document.querySelector(".video-container");
 
   if (modal) {
     modal.style.display = "none";
@@ -711,10 +683,7 @@ function closeModal() {
   updateServerName();
 }
 
-
-/* =========================================
-   23. MODAL BACKDROP CLICK
-========================================= */
+/* 23. MODAL BACKDROP CLICK */
 
 document.addEventListener("click", function (event) {
   const modal = document.getElementById("modal");
@@ -724,10 +693,7 @@ document.addEventListener("click", function (event) {
   }
 });
 
-
-/* =========================================
-   24. ESCAPE KEY
-========================================= */
+/* 24. ESCAPE KEY */
 
 document.addEventListener("keydown", function (event) {
   if (event.key === "Escape") {
@@ -735,16 +701,16 @@ document.addEventListener("keydown", function (event) {
   }
 });
 
-
-/* =========================================
-   25. SEARCH MOVIES AND TV
-========================================= */
+/* 25. SEARCH MOVIES AND TV */
 
 async function searchTMDB(query) {
   clearTimeout(searchTimeout);
 
-  const section = document.getElementById("search-section");
-  const results = document.getElementById("search-results");
+  const section =
+    document.getElementById("search-section");
+
+  const results =
+    document.getElementById("search-results");
 
   if (!section || !results) return;
 
@@ -788,17 +754,19 @@ async function searchTMDB(query) {
   }, 400);
 }
 
-
-/* =========================================
-   26. INITIALIZE WEBSITE
-========================================= */
+/* 26. INITIALIZE WEBSITE */
 
 async function init() {
   console.log("MovieFlixHD initializing...");
 
-  const movieContainer = document.getElementById("movies-list");
-  const tvContainer = document.getElementById("tvshows-list");
-  const animeContainer = document.getElementById("anime-list");
+  const movieContainer =
+    document.getElementById("movies-list");
+
+  const tvContainer =
+    document.getElementById("tvshows-list");
+
+  const animeContainer =
+    document.getElementById("anime-list");
 
   if (movieContainer) {
     movieContainer.innerHTML = "<p>Loading movies...</p>";
@@ -832,10 +800,7 @@ async function init() {
   console.log("Anime:", anime.length);
 }
 
-
-/* =========================================
-   27. START WEBSITE
-========================================= */
+/* 27. START WEBSITE */
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init);
