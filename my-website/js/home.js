@@ -1,3 +1,4 @@
+
 /* =========================================
    MOVIEFLIXHD - COMPLETE HOME JAVASCRIPT
    TMDB API + POSTER FIX + 3 SERVER PLAYER
@@ -32,8 +33,6 @@ const POSTER_ERROR =
 
 const MOVIE_SOURCES = [
   {
-    name: "VidSrc",
-
     movie: (id) =>
       `https://vidsrc.sh/embed/movie/${id}`,
 
@@ -42,8 +41,6 @@ const MOVIE_SOURCES = [
   },
 
   {
-    name: "VidRift",
-
     movie: (id) =>
       `https://embed.vidrift.net/embed/movie/${id}`,
 
@@ -52,8 +49,6 @@ const MOVIE_SOURCES = [
   },
 
   {
-    name: "EmbedWave",
-
     movie: (id) =>
       `https://embedwave.cc/embed/movie/${id}`,
 
@@ -325,7 +320,7 @@ function loadMovieServer() {
       "Please select another server."
     );
 
-    updateServerName("Unavailable");
+    updateServerName();
     return;
   }
 
@@ -344,7 +339,6 @@ function loadMovieServer() {
         "This content type is not supported."
       );
 
-      updateServerName(source.name);
       return;
     }
 
@@ -356,17 +350,15 @@ function loadMovieServer() {
       "There was a problem preparing this video source."
     );
 
-    updateServerName(source.name);
     return;
   }
 
   if (!url || typeof url !== "string") {
     showPlayerMessage(
-      `${source.name} is not configured`,
-      "This server is not yet connected."
+      "Server unavailable",
+      "This server is currently unavailable."
     );
 
-    updateServerName(source.name);
     return;
   }
 
@@ -385,7 +377,6 @@ function loadMovieServer() {
       "Please check your configured server URL."
     );
 
-    updateServerName(source.name);
     return;
   }
 
@@ -399,7 +390,7 @@ function loadMovieServer() {
 
   container.appendChild(iframe);
 
-  updateServerName(source.name);
+  updateServerName();
 }
 
 
@@ -431,17 +422,15 @@ function showPlayerMessage(title, message) {
 
 
 /* =========================================
-   13. UPDATE SERVER NAME AND BUTTONS
+   13. UPDATE ACTIVE SERVER LABEL
 ========================================= */
 
-function updateServerName(name) {
-  const source = MOVIE_SOURCES[currentServer];
-
+function updateServerName() {
   const serverName = document.getElementById("server-name");
 
   if (serverName) {
     serverName.textContent =
-      name || source?.name || "Unavailable";
+      `Server ${currentServer + 1}`;
   }
 
   document.querySelectorAll(".server-btn").forEach(button => {
