@@ -1,7 +1,6 @@
-
 /* =========================================
    MOVIEFLIXHD - COMPLETE HOME JAVASCRIPT
-   TMDB API + POSTER FIX + MULTI-SERVER PLAYER
+   TMDB API + POSTER FIX + 3 SERVER PLAYER
 ========================================= */
 
 
@@ -34,20 +33,32 @@ const POSTER_ERROR =
 const MOVIE_SOURCES = [
   {
     name: "VidSrc",
+
     movie: (id) =>
       `https://vidsrc.sh/embed/movie/${id}`,
+
     tv: (id, season, episode) =>
       `https://vidsrc.sh/embed/tv/${id}/${season}/${episode}`
   },
+
   {
-    name: "VidKing",
-    movie: (id) => "",
-    tv: (id, season, episode) => ""
+    name: "VidRift",
+
+    movie: (id) =>
+      `https://embed.vidrift.net/embed/movie/${id}`,
+
+    tv: (id, season, episode) =>
+      `https://embed.vidrift.net/embed/tv/${id}/${season}/${episode}`
   },
+
   {
     name: "EmbedWave",
-    movie: (id) => "",
-    tv: (id, season, episode) => ""
+
+    movie: (id) =>
+      `https://embedwave.cc/embed/movie/${id}`,
+
+    tv: (id, season, episode) =>
+      `https://embedwave.cc/embed/tv/${id}/${season}/${episode}`
   }
 ];
 
