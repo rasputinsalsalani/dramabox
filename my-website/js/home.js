@@ -1,4 +1,5 @@
 
+
 /* =========================================
    MOVIEFLIXHD - COMPLETE HOME JAVASCRIPT
    TMDB API + POSTER FIX + MULTI-SERVER PLAYER
@@ -9,8 +10,6 @@
    1. TMDB API CONFIGURATION
 ========================================= */
 
-// IMPORTANT: Decode the original Base64 string directly.
-// Do not reverse it before decoding.
 (function () {
   const encodedKey =
     "MWJkMjhkZWU5NTMzYTBiMWVkMjkyNTQ5ZDgyNmY4OGI=";
@@ -33,8 +32,8 @@ const POSTER_ERROR =
    2. PLAYER SERVER CONFIGURATION
 ========================================= */
 
-// Add only authorized video embed URLs here.
-// Empty URLs mean the server is not configured.
+// Add your authorized HTTPS embed URLs here.
+// Leave empty if a server is not configured.
 
 const MOVIE_SOURCES = [
   {
@@ -292,6 +291,7 @@ function showDetails(item) {
     heading.textContent = itemTitle;
   }
 
+  updateServerName();
   loadMovieServer();
 }
 
@@ -305,6 +305,7 @@ function loadMovieServer() {
 
   if (!container || !currentItem) return;
 
+  // Remove previous player and iframe.
   container.innerHTML = "";
 
   const mediaType = getMediaType(currentItem);
@@ -312,43 +313,62 @@ function loadMovieServer() {
 
   if (!source) {
     showPlayerMessage(
-      "No more servers available",
-      "Please try again later."
+      "Server unavailable",
+      "Please select another server."
     );
 
-    updateServerName("No server");
+    updateServerName("Unavailable");
     return;
   }
 
   let url = "";
 
-  if (mediaType === "movie") {
-    url = source.movie(currentItem.id);
+  try {
+    if (mediaType === "movie") {
+      url = source.movie(currentItem.id);
 
-  } else if (mediaType === "tv") {
-    url = source.tv(currentItem.id, 1, 1);
+    } else if (mediaType === "tv") {
+      // Default episode: Season 1, Episode 1.
+      url = source.tv(currentItem.id, 1, 1);
 
-  } else {
+    } else {
+      showPlayerMessage(
+        "Unsupported media type",
+        "This content type is not supported."
+      );
+
+      updateServerName(source.name);
+      return;
+    }
+
+  } catch (error) {
+    console.error("Server URL error:", error);
+
     showPlayerMessage(
-      "Unsupported media type",
-      "This content type is not supported."
-    );
-
-    return;
-  }
-
-  if (!url) {
-    showPlayerMessage(
-      `${source.name} is not configured`,
-      "Add an authorized embed URL in home.js."
+      "Unable to load server",
+      "There was a problem preparing this video source."
     );
 
     updateServerName(source.name);
     return;
   }
 
+  // Server has no configured URL.
+  if (!url || typeof url !== "string") {
+    showPlayerMessage(
+      `${source.name} is not configured`,
+      "Add an authorized HTTPS embed URL in home.js."
+    );
+
+    updateServerName(source.name);
+    return;
+  }
+
+  // Validate URL.
+  let parsedURL;
+
   try {
-    const parsedURL = new URL(url);
+    parsedURL = new URL(url);
 
     if (parsedURL.protocol !== "https:") {
       throw new Error("HTTPS required");
@@ -364,9 +384,10 @@ function loadMovieServer() {
     return;
   }
 
+  // Create iframe player.
   const iframe = document.createElement("iframe");
 
-  iframe.src = url;
+  iframe.src = parsedURL.href;
   iframe.title = "MovieFlixHD Video Player";
   iframe.allow = "autoplay; fullscreen; picture-in-picture";
   iframe.allowFullscreen = true;
@@ -406,38 +427,73 @@ function showPlayerMessage(title, message) {
 
 
 /* =========================================
-   13. SERVER NAME
+   13. UPDATE SERVER NAME AND BUTTONS
 ========================================= */
 
 function updateServerName(name) {
-  const element = document.getElementById("server-name");
+  const source = MOVIE_SOURCES[currentServer];
 
-  if (element) {
-    element.textContent = name;
+  const serverName = document.getElementById("server-name");
+
+  if (serverName) {
+    serverName.textContent =
+      name || source?.name || "Unavailable";
+  }
+
+  // Update active server button.
+  document.querySelectorAll(".server-btn").forEach(button => {
+    const buttonIndex = Number(button.dataset.server);
+    const isActive = buttonIndex === currentServer;
+
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+}
+
+
+/* =========================================
+   14. SELECT SERVER
+========================================= */
+
+function selectServer(index) {
+  if (!Number.isInteger(index)) return;
+
+  if (index < 0 || index >= MOVIE_SOURCES.length) {
+    return;
+  }
+
+  currentServer = index;
+
+  updateServerName();
+
+  if (currentItem) {
+    loadMovieServer();
   }
 }
 
 
 /* =========================================
-   14. NEXT SERVER
+   15. NEXT SERVER
 ========================================= */
 
 function nextServer() {
   if (!currentItem) return;
 
-  if (currentServer >= MOVIE_SOURCES.length - 1) {
-    alert("No more servers available.");
+  if (!MOVIE_SOURCES.length) {
     return;
   }
 
-  currentServer++;
+  // Cycle through all servers.
+  currentServer =
+    (currentServer + 1) % MOVIE_SOURCES.length;
 
+  updateServerName();
   loadMovieServer();
 }
 
 
 /* =========================================
-   15. CLOSE MODAL
+   16. CLOSE MODAL
 ========================================= */
 
 function closeModal() {
@@ -449,16 +505,19 @@ function closeModal() {
   }
 
   if (container) {
+    // Removes iframe and stops its playback.
     container.innerHTML = "";
   }
 
   currentItem = null;
   currentServer = 0;
+
+  updateServerName();
 }
 
 
 /* =========================================
-   16. MODAL BACKDROP CLICK
+   17. MODAL BACKDROP CLICK
 ========================================= */
 
 document.addEventListener("click", function (event) {
@@ -471,7 +530,7 @@ document.addEventListener("click", function (event) {
 
 
 /* =========================================
-   17. ESCAPE KEY
+   18. ESCAPE KEY
 ========================================= */
 
 document.addEventListener("keydown", function (event) {
@@ -482,7 +541,7 @@ document.addEventListener("keydown", function (event) {
 
 
 /* =========================================
-   18. SEARCH MOVIES AND TV
+   19. SEARCH MOVIES AND TV
 ========================================= */
 
 async function searchTMDB(query) {
@@ -512,6 +571,7 @@ async function searchTMDB(query) {
       })
     );
 
+    // Ignore outdated search responses.
     if (requestId !== searchRequest) return;
 
     section.hidden = false;
@@ -543,7 +603,7 @@ async function searchTMDB(query) {
 
 
 /* =========================================
-   19. INITIALIZE WEBSITE
+   20. INITIALIZE WEBSITE
 ========================================= */
 
 async function init() {
@@ -587,7 +647,7 @@ async function init() {
 
 
 /* =========================================
-   20. START WEBSITE
+   21. START WEBSITE
 ========================================= */
 
 if (document.readyState === "loading") {
@@ -595,3 +655,4 @@ if (document.readyState === "loading") {
 } else {
   init();
 }
+
