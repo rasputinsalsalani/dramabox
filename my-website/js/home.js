@@ -53,6 +53,11 @@
   let searchTimer = null;
   let searchRequest = 0;
 
+  let gateTimer = null;
+  let gateInterval = null;
+  let countdownValue = 3;
+  let autoAdAttempted = false;
+
   // ==========================================
   // ELEMENT HELPERS
   // ==========================================
@@ -657,6 +662,18 @@
     if (next) next.disabled = true;
   }
 
+  function clearAdGateTimers() {
+    if (gateTimer) {
+      clearTimeout(gateTimer);
+      gateTimer = null;
+    }
+
+    if (gateInterval) {
+      clearInterval(gateInterval);
+      gateInterval = null;
+    }
+  }
+
   function openMoviePlayer(movie) {
     currentSeries = null;
     currentMovie = movie;
@@ -709,29 +726,141 @@
   }
 
   // ==========================================
-  // FIXED PLAYER SCREEN
-  // READY TO WATCH TEXT REMOVED
+  // PLAYER GATE DESIGN
+  // ==========================================
+
+  function addGateStyles() {
+    if ($("player-gate-styles")) return;
+
+    const style = document.createElement("style");
+    style.id = "player-gate-styles";
+
+    style.textContent = `
+      #video-container {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+      }
+
+      .play-now-message {
+        position: absolute;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        padding: 20px;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.78);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+      }
+
+      .gate-title {
+        margin: 0;
+        color: #fff;
+        font-size: clamp(20px, 4vw, 28px);
+        font-weight: 800;
+        letter-spacing: 1px;
+      }
+
+      .gate-countdown {
+        margin: 0;
+        color: #fff;
+        font-size: 15px;
+        opacity: 0.85;
+      }
+
+      .gate-countdown span {
+        color: #ffcc00;
+        font-size: 25px;
+        font-weight: 900;
+      }
+
+      .play-now-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-width: 175px;
+        padding: 15px 28px;
+        border: 0;
+        border-radius: 8px;
+        background: #e50914;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 5px 22px rgba(229, 9, 20, 0.35);
+        transition: transform 0.2s, background 0.2s;
+      }
+
+      .play-now-btn:hover {
+        background: #ff1824;
+        transform: scale(1.04);
+      }
+
+      .play-now-btn:active {
+        transform: scale(0.97);
+      }
+
+      .gate-hint {
+        max-width: 300px;
+        margin: 0;
+        color: #ddd;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  // ==========================================
+  // OPEN PLAYER WITH 3-SECOND COUNTDOWN
   // ==========================================
 
   function openPlayer(title, subtitle, description = "") {
+    clearAdGateTimers();
+
+    playerUnlocked = false;
+    autoAdAttempted = false;
+    countdownValue = 3;
+
     setText("player-title", title);
     setText("player-subtitle", subtitle);
     setText("player-info", description);
+
+    addGateStyles();
 
     const video = $("video-container");
 
     if (video) {
       video.innerHTML = `
-        <div class="play-now-message">
+        <div class="play-now-message" id="player-gate">
+
+          <h2 class="gate-title">READY TO WATCH?</h2>
+
+          <p class="gate-countdown">
+            Starting in <span id="gate-countdown-number">3</span>
+          </p>
+
           <button
             class="play-now-btn"
             id="unlock-player"
             type="button"
-            aria-label="Play video"
+            aria-label="Play video now"
           >
             <span aria-hidden="true">▶</span>
             <span>PLAY NOW</span>
           </button>
+
+          <p class="gate-hint">
+            Click PLAY NOW to start watching immediately.
+          </p>
+
         </div>
       `;
 
@@ -763,6 +892,66 @@
     show(elements.modal);
 
     document.body.style.overflow = "hidden";
+
+    startAdCountdown();
+  }
+
+  // ==========================================
+  // AUTOMATIC AD ATTEMPT AFTER 3 SECONDS
+  // ==========================================
+
+  function startAdCountdown() {
+    const countdown = $("gate-countdown-number");
+
+    gateInterval = setInterval(() => {
+      if (playerUnlocked) {
+        clearAdGateTimers();
+        return;
+      }
+
+      countdownValue--;
+
+      if (countdown) {
+        countdown.textContent = String(
+          Math.max(countdownValue, 0)
+        );
+      }
+
+      if (countdownValue <= 0) {
+        clearInterval(gateInterval);
+        gateInterval = null;
+
+        attemptAutomaticAd();
+      }
+    }, 1000);
+  }
+
+  function attemptAutomaticAd() {
+    if (playerUnlocked || autoAdAttempted) return;
+
+    autoAdAttempted = true;
+
+    // Attempt to open the advertisement in a new tab.
+    // Browsers may block automatic popups without a click.
+    window.open(
+      AD_URL,
+      "_blank",
+      "noopener,noreferrer"
+    );
+
+    // Keep the player gate visible until the viewer clicks.
+    const countdown = $("gate-countdown-number");
+
+    if (countdown) {
+      countdown.textContent = "✓";
+    }
+
+    const countdownText = document.querySelector(".gate-countdown");
+
+    if (countdownText) {
+      countdownText.innerHTML =
+        'Your video is ready. <span>▶</span>';
+    }
   }
 
   // ==========================================
@@ -774,14 +963,17 @@
 
     playerUnlocked = true;
 
-    // Open the advertisement in a new tab.
+    clearAdGateTimers();
+
+    // User click: attempt opening the ad again.
+    // This click-triggered attempt is more likely to be
+    // allowed by browser popup protection.
     window.open(
       AD_URL,
       "_blank",
       "noopener,noreferrer"
     );
 
-    // Load the selected video.
     loadVideo();
   }
 
@@ -894,6 +1086,8 @@
   }
 
   function closeModal() {
+    clearAdGateTimers();
+
     hide(elements.modal);
 
     const video = $("video-container");
@@ -906,6 +1100,7 @@
 
     document.body.style.overflow = "";
     playerUnlocked = false;
+    autoAdAttempted = false;
   }
 
   // ==========================================
@@ -1144,6 +1339,8 @@
 
   function goHome(event) {
     if (event) event.preventDefault();
+
+    clearAdGateTimers();
 
     currentItem = null;
     currentMovie = null;
