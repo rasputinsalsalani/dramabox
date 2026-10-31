@@ -1228,3 +1228,25 @@ select:focus-visible {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--red);
 }
+/* WATCH NOW BUTTON */
+#banner-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 13px 27px;
+  min-width: 145px;
+  border: none;
+  border-radius: 7px;
+  background: #e50924;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .5px;
+  box-shadow: 0 5px 20px rgba(229,9,36,.35);
+}
+
+#banner-play:hover {
+  background: #ff1e3d;
+  transform: translateY(-2px);
+}
