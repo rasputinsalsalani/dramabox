@@ -1,9 +1,235 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MovieFlixHD</title><link rel="stylesheet" href="css/home.css"></head><body>
-<header class="header"><a class="logo" href="./" onclick="return goHome(event)">MOVIE<span>FLIXHD</span></a><div class="search-box"><input id="search-input" placeholder="Search movies, series and anime..."><button id="search-btn">⌕</button></div></header>
-<main><section id="search-results" hidden><h2>Search Results</h2><div id="search-results-list" class="movie-grid"></div></section>
-<div id="home-content"><section id="banner" class="banner"><div id="banner-bg" class="banner-bg"></div><div class="banner-content"><small>FEATURED</small><h1 id="banner-title">Discover Movies</h1><div id="banner-meta"></div><p id="banner-overview"></p><button id="banner-play" class="primary">VIEW DETAILS</button></div></section>
-<section><h2>Trending Movies</h2><div id="trending-movies" class="movie-grid"></div></section><section><h2>Popular Series</h2><div id="popular-series" class="movie-grid"></div></section><section><h2>Popular Anime</h2><div id="popular-anime" class="movie-grid"></div></section></div>
-<section id="series-page" hidden><div class="topbar"><button onclick="goHome()">← BACK</button><button onclick="openSharePopup()">SHARE</button></div><div class="details"><img id="series-poster" alt="Poster"><div><small id="details-kicker">DETAILS</small><h1 id="series-title"></h1><div id="series-meta"></div><p id="series-overview"></p><button id="details-primary-btn" class="primary"></button><p id="share-feedback"></p></div></div><section id="episodes-section"><div class="section-head"><h2 id="details-list-title">Episodes</h2><label id="season-control">Season <select id="season-select"></select></label></div><div id="episodes-list" class="episodes-list"></div></section><section id="movie-suggestions-section" hidden><h2>YOU MAY ALSO LIKE</h2><div id="movie-suggestions-list" class="movie-grid"></div></section></section></main>
-<div id="modal" class="overlay" hidden><div class="dialog"><div class="topbar"><div><h2 id="player-title"></h2><p id="player-subtitle"></p></div><button onclick="closeModal()">×</button></div><div id="video-container" class="video"></div><div id="player-controls" hidden><p id="server-name"></p><button class="server-btn" data-server="0" onclick="selectServer(0)">SERVER 1</button><button class="server-btn" data-server="1" onclick="selectServer(1)">SERVER 2</button><button class="server-btn" data-server="2" onclick="selectServer(2)">SERVER 3</button><div id="episode-navigation" hidden><button id="prev-episode-btn" onclick="navigateEpisode(-1)">Previous</button><span id="episode-nav-label"></span><button id="next-episode-btn" onclick="navigateEpisode(1)">Next</button></div></div></div></div>
-<div id="share-modal" class="overlay" hidden><div class="dialog"><div class="topbar"><h2 id="share-modal-title">Share</h2><button onclick="closeSharePopup()">×</button></div><p id="share-modal-description"></p><div class="share-grid"><button onclick="shareTo('facebook')">Facebook</button><button onclick="shareTo('messenger')">Messenger</button><button onclick="shareTo('whatsapp')">WhatsApp</button><button onclick="shareTo('telegram')">Telegram</button><button onclick="shareTo('x')">X</button><button onclick="shareTo('tiktok')">TikTok</button><button onclick="shareTo('copy')">Copy Link</button></div><p id="share-popup-feedback"></p></div></div>
-<footer>© <span id="year"></span> MovieFlixHD</footer><script src="js/home.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b10">
+  <title>MovieFlixHD</title>
+  <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a class="logo" href="./" onclick="return goHome(event)">
+      MOVIE<span>FLIXHD</span>
+    </a>
+
+    <div class="search-box" id="search-section">
+      <input id="search-input" type="search"
+        placeholder="Search movies, series and anime..."
+        autocomplete="off">
+      <button id="search-btn" type="button">⌕</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section id="search-results" class="search-results" hidden>
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">DISCOVER</span>
+        <h2>Search Results</h2>
+      </div>
+    </div>
+    <div id="search-results-list" class="movie-grid"></div>
+  </section>
+
+  <div id="home-content">
+
+    <section id="banner" class="banner">
+      <div class="banner-bg" id="banner-bg"></div>
+      <div class="banner-overlay"></div>
+
+      <div class="banner-content">
+        <span class="banner-label">FEATURED MOVIE</span>
+        <h1 id="banner-title">Discover something great</h1>
+        <div id="banner-meta" class="meta-line"></div>
+        <p id="banner-overview"></p>
+        <button id="banner-play" class="primary-btn" type="button">
+          VIEW DETAILS
+        </button>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">WHAT'S TRENDING</span>
+          <h2>Trending Movies</h2>
+        </div>
+      </div>
+      <div id="trending-movies" class="movie-grid"></div>
+    </section>
+
+    <section class="content-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">POPULAR NOW</span>
+          <h2>Popular Series</h2>
+        </div>
+      </div>
+      <div id="popular-series" class="movie-grid"></div>
+    </section>
+
+    <section class="content-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">ANIME WORLD</span>
+          <h2>Popular Anime</h2>
+        </div>
+      </div>
+      <div id="popular-anime" class="movie-grid"></div>
+    </section>
+
+  </div>
+
+  <section id="series-page" class="details-page" hidden>
+
+    <div class="details-topbar">
+      <button class="back-btn" type="button" onclick="goHome()">
+        ← BACK
+      </button>
+
+      <button id="details-share-btn" class="share-series-btn"
+        type="button" onclick="openSharePopup()">
+        ↗ SHARE
+      </button>
+    </div>
+
+    <div class="details-hero">
+      <div class="series-poster-wrap">
+        <img id="series-poster" src="" alt="Title poster">
+      </div>
+
+      <div class="series-summary">
+        <span id="details-kicker" class="eyebrow">DETAILS</span>
+        <h1 id="series-title">Loading...</h1>
+        <div id="series-meta" class="meta-line"></div>
+        <p id="series-overview"></p>
+
+        <button id="details-primary-btn" class="primary-btn" type="button">
+          PLAY
+        </button>
+
+        <p id="share-feedback" class="feedback"></p>
+      </div>
+    </div>
+
+    <section id="episodes-section" class="episodes-section">
+      <div class="section-heading">
+        <div>
+          <span id="details-list-kicker" class="eyebrow">WATCH</span>
+          <h2 id="details-list-title">Episodes</h2>
+        </div>
+
+        <div id="season-control" class="season-control">
+          <label for="season-select">Season</label>
+          <select id="season-select"></select>
+        </div>
+      </div>
+
+      <div id="episodes-list" class="episodes-list"></div>
+    </section>
+
+    <section id="movie-suggestions-section" class="episodes-section" hidden>
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">MORE TO EXPLORE</span>
+          <h2>YOU MAY ALSO LIKE</h2>
+        </div>
+      </div>
+
+      <div id="movie-suggestions-list" class="movie-grid"></div>
+    </section>
+
+  </section>
+</main>
+
+<div id="modal" class="modal" hidden>
+  <div class="modal-content">
+
+    <div class="modal-header">
+      <div>
+        <h2 id="player-title">MovieFlixHD Player</h2>
+        <p id="player-subtitle"></p>
+      </div>
+
+      <button class="modal-close" type="button" onclick="closeModal()">
+        ×
+      </button>
+    </div>
+
+    <div class="video-container" id="video-container"></div>
+
+    <div class="player-controls" hidden>
+      <div class="server-controls">
+        <span id="server-name">Server 1</span>
+
+        <button class="server-btn active" data-server="0"
+          onclick="selectServer(0)">SERVER 1</button>
+
+        <button class="server-btn" data-server="1"
+          onclick="selectServer(1)">SERVER 2</button>
+
+        <button class="server-btn" data-server="2"
+          onclick="selectServer(2)">SERVER 3</button>
+      </div>
+
+      <div id="episode-navigation" class="episode-navigation" hidden>
+        <button id="prev-episode-btn" type="button"
+          onclick="navigateEpisode(-1)">← Previous</button>
+
+        <span id="episode-nav-label"></span>
+
+        <button id="next-episode-btn" type="button"
+          onclick="navigateEpisode(1)">Next →</button>
+      </div>
+    </div>
+
+    <p id="player-info" class="player-info">
+      Select a server if playback does not start.
+    </p>
+
+  </div>
+</div>
+
+<div id="share-modal" class="share-modal" hidden>
+  <div class="share-modal-content">
+
+    <div class="share-modal-header">
+      <div>
+        <h2 id="share-modal-title">Share</h2>
+        <p id="share-modal-description"></p>
+      </div>
+
+      <button type="button" onclick="closeSharePopup()">×</button>
+    </div>
+
+    <div class="share-options">
+      <button onclick="shareTo('facebook')">Facebook</button>
+      <button onclick="shareTo('messenger')">Messenger</button>
+      <button onclick="shareTo('whatsapp')">WhatsApp</button>
+      <button onclick="shareTo('telegram')">Telegram</button>
+      <button onclick="shareTo('x')">X</button>
+      <button onclick="shareTo('tiktok')">TikTok</button>
+      <button onclick="shareTo('copy')">Copy Link</button>
+    </div>
+
+    <p id="share-popup-feedback" class="feedback"></p>
+
+  </div>
+</div>
+
+<footer class="footer">
+  <a class="logo footer-logo" href="./" onclick="return goHome(event)">
+    MOVIE<span>FLIXHD</span>
+  </a>
+  <p>Discover movies and series.</p>
+  <small>© <span id="year"></span> MovieFlixHD</small>
+</footer>
+
+<script src="js/home.js"></script>
+</body>
+</html>
