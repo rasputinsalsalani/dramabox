@@ -1,7 +1,15 @@
 
-/* MOVIEFLIXHD — TMDB + SERIES DETAILS + EPISODE PLAYER
-   Includes search, social sharing, ad redirect and 3 video servers.
-*/
+/* =====================================================
+   MOVIEFLIXHD
+   TMDB + MOVIE DETAILS + SERIES DETAILS
+   MOVIE SUGGESTIONS + EPISODE PLAYER
+   SEARCH + SOCIAL SHARING + AD REDIRECT
+   3 VIDEO SERVERS
+===================================================== */
+
+/* =========================
+   API CONFIGURATION
+========================= */
 
 (function () {
   const encodedKey = "MWJkMjhkZWU5NTMzYTBiMWVkMjkyNTQ5ZDgyNmY4OGI=";
@@ -13,39 +21,64 @@ const IMG = "https://image.tmdb.org/t/p/w500";
 const BACKDROP = "https://image.tmdb.org/t/p/original";
 const STILL = "https://image.tmdb.org/t/p/w500";
 
-const PLACEHOLDER = "https://placehold.co/500x750/151820/ffffff?text=No+Poster";
-const POSTER_ERROR = "https://placehold.co/500x750/151820/ffffff?text=Poster+Unavailable";
-const STILL_PLACEHOLDER = "https://placehold.co/640x360/151820/ffffff?text=Episode";
+const PLACEHOLDER =
+  "https://placehold.co/500x750/151820/ffffff?text=No+Poster";
 
-const AD_REDIRECT_URL = "https://directyp.org/4/02b9737bd4da1e3a14a820f0ce61a20d";
+const POSTER_ERROR =
+  "https://placehold.co/500x750/151820/ffffff?text=Poster+Unavailable";
+
+const STILL_PLACEHOLDER =
+  "https://placehold.co/640x360/151820/ffffff?text=Episode";
+
+const AD_REDIRECT_URL =
+  "https://directyp.org/4/02b9737bd4da1e3a14a820f0ce61a20d";
+
+
+/* =========================
+   VIDEO SERVERS
+========================= */
 
 const MOVIE_SOURCES = [
   {
     movie: id => `https://vidsrc.sh/embed/movie/${id}`,
-    tv: (id, season, episode) => `https://vidsrc.sh/embed/tv/${id}/${season}/${episode}`
+    tv: (id, season, episode) =>
+      `https://vidsrc.sh/embed/tv/${id}/${season}/${episode}`
   },
   {
     movie: id => `https://embed.vidrift.net/embed/movie/${id}`,
-    tv: (id, season, episode) => `https://embed.vidrift.net/embed/tv/${id}/${season}/${episode}`
+    tv: (id, season, episode) =>
+      `https://embed.vidrift.net/embed/tv/${id}/${season}/${episode}`
   },
   {
     movie: id => `https://embedwave.cc/embed/movie/${id}`,
-    tv: (id, season, episode) => `https://embedwave.cc/embed/tv/${id}/${season}/${episode}`
+    tv: (id, season, episode) =>
+      `https://embedwave.cc/embed/tv/${id}/${season}/${episode}`
   }
 ];
 
+
+/* =========================
+   GLOBAL STATES
+========================= */
+
 let currentItem = null;
+let currentMovie = null;
+let currentSeries = null;
 let bannerItem = null;
+
 let currentServer = 0;
 let playerUnlocked = false;
 
-let searchTimeout = null;
-let searchRequest = 0;
-
-let currentSeries = null;
 let currentSeasonEpisodes = [];
 let selectedEpisodeIndex = -1;
+
+let movieRecommendations = [];
+
+let movieRequest = 0;
 let seriesRequest = 0;
+
+let searchTimeout = null;
+let searchRequest = 0;
 
 let shareTarget = null;
 
@@ -301,7 +334,7 @@ function displayList(items, id) {
 
 
 /* =========================
-   MOVIE PLAYER
+   OPEN DETAILS
 ========================= */
 
 function showDetails(item) {
@@ -312,50 +345,245 @@ function showDetails(item) {
     return;
   }
 
-  currentItem = item;
+  openMoviePage(item.id);
+}
+
+
+/* =========================
+   MOVIE DETAILS PAGE
+========================= */
+
+async function openMoviePage(id, pushState = true) {
+  const token = ++movieRequest;
+
+  seriesRequest++;
+
+  currentSeries = null;
+  currentSeasonEpisodes = [];
+  currentMovie = null;
+  currentItem = null;
+
+  const home = document.getElementById("home-content");
+  const banner = document.getElementById("banner");
+  const page = document.getElementById("series-page");
+  const search = document.getElementById("search-section");
+
+  if (!home || !page) return;
+
+  home.hidden = true;
+
+  if (banner) banner.hidden = true;
+  if (search) search.hidden = true;
+
+  page.hidden = false;
+
+  page.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+  document.getElementById("details-kicker").textContent =
+    "MOVIE DETAILS";
+
+  document.getElementById("series-title").textContent =
+    "Loading movie...";
+
+  document.getElementById("series-overview").textContent =
+    "Fetching movie information...";
+
+  const playButton = document.getElementById("details-play-btn");
+
+  playButton.textContent = "▶ PLAY MOVIE";
+  playButton.onclick = playMovieFromDetails;
+
+  document.getElementById("details-list-kicker").textContent =
+    "RECOMMENDED MOVIES";
+
+  document.getElementById("details-list-title").textContent =
+    "YOU MAY ALSO LIKE";
+
+  document.getElementById("season-control").hidden = true;
+
+  document.getElementById("episodes-list").innerHTML =
+    '<p class="episode-status">Loading movie suggestions...</p>';
+
+  const [movie, recommendations] = await Promise.all([
+    fetchJSON(
+      createTMDBUrl(`/movie/${encodeURIComponent(id)}`, {
+        language: "en-US"
+      })
+    ),
+
+    fetchJSON(
+      createTMDBUrl(`/movie/${encodeURIComponent(id)}/recommendations`, {
+        language: "en-US",
+        page: 1
+      })
+    )
+  ]);
+
+  if (token !== movieRequest) return;
+
+  if (!movie) {
+    document.getElementById("series-title").textContent =
+      "Movie unavailable";
+
+    document.getElementById("series-overview").textContent =
+      "Could not load movie details. Please try again.";
+
+    document.getElementById("episodes-list").innerHTML =
+      '<p class="episode-status">Movie suggestions unavailable.</p>';
+
+    return;
+  }
+
+  movie.media_type = "movie";
+
+  currentMovie = movie;
+  movieRecommendations = recommendations?.results || [];
+
+  const poster = document.getElementById("series-poster");
+
+  poster.onerror = function () {
+    this.onerror = null;
+    this.src = PLACEHOLDER;
+  };
+
+  poster.src = movie.poster_path
+    ? `${IMG}${movie.poster_path}`
+    : PLACEHOLDER;
+
+  poster.alt = `${movie.title || "Movie"} poster`;
+
+  document.getElementById("series-title").textContent =
+    movie.title || "Untitled Movie";
+
+  document.getElementById("series-overview").textContent =
+    movie.overview || "No movie description is available.";
+
+  const meta = document.getElementById("series-meta");
+
+  meta.innerHTML = "";
+
+  const year = movie.release_date
+    ? movie.release_date.substring(0, 4)
+    : "N/A";
+
+  const runtime = movie.runtime
+    ? `${movie.runtime} min`
+    : "";
+
+  const genres = (movie.genres || [])
+    .map(genre => genre.name)
+    .slice(0, 3)
+    .join(" • ");
+
+  [year, runtime, genres].filter(Boolean).forEach(value => {
+    const span = document.createElement("span");
+    span.textContent = value;
+    meta.appendChild(span);
+  });
+
+  if (Number(movie.vote_average) > 0) {
+    const rating = document.createElement("span");
+
+    rating.className = "rating";
+    rating.textContent =
+      `★ ${Number(movie.vote_average).toFixed(1)}/10`;
+
+    meta.appendChild(rating);
+  }
+
+  renderMovieRecommendations(movieRecommendations);
+
+  if (pushState) {
+    const url = new URL(window.location.href);
+
+    url.searchParams.set("movie", String(id));
+    url.searchParams.delete("tv");
+    url.searchParams.delete("season");
+
+    history.pushState({ movie: id }, "", url);
+  }
+}
+
+
+/* =========================
+   MOVIE SUGGESTIONS
+========================= */
+
+function renderMovieRecommendations(items) {
+  const list = document.getElementById("episodes-list");
+
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  const suggestions = (items || [])
+    .filter(item => item.poster_path)
+    .slice(0, 12);
+
+  if (!suggestions.length) {
+    list.innerHTML =
+      '<p class="episode-status">No movie suggestions available right now.</p>';
+    return;
+  }
+
+  suggestions.forEach(item => {
+    const movie = {
+      ...item,
+      media_type: "movie"
+    };
+
+    list.appendChild(createMovieCard(movie));
+  });
+}
+
+
+/* =========================
+   PLAY MOVIE FROM DETAILS
+========================= */
+
+function playMovieFromDetails() {
+  if (!currentMovie) return;
+
+  currentItem = {
+    ...currentMovie,
+    media_type: "movie"
+  };
+
   currentServer = 0;
   playerUnlocked = false;
   selectedEpisodeIndex = -1;
 
-  const url = new URL(window.location.href);
-
-  url.searchParams.set("movie", String(item.id));
-  url.searchParams.delete("tv");
-  url.searchParams.delete("season");
-
-  history.pushState({ movie: item.id }, "", url);
-
   const modal = document.getElementById("modal");
-  const title = document.getElementById("modal-title");
-  const description = document.getElementById("modal-description");
-  const heading = document.getElementById("player-heading-title");
 
   if (!modal) return;
 
-  const itemTitle = item.title || item.name || "Untitled";
-
   modal.style.display = "flex";
 
-  if (title) title.textContent = itemTitle;
+  document.getElementById("modal-title").textContent =
+    currentMovie.title || "Movie";
 
-  if (description) {
-    description.textContent = item.overview || "No description available.";
-  }
+  document.getElementById("modal-description").textContent =
+    currentMovie.overview || "No description available.";
 
-  if (heading) heading.textContent = itemTitle;
+  document.getElementById("player-heading-title").textContent =
+    currentMovie.title || "MovieFlixHD Player";
 
-  const episodeNav = document.getElementById("episode-navigation");
+  document.getElementById("player-episode-label").textContent = "";
 
-  if (episodeNav) episodeNav.hidden = true;
-
-  const episodeLabel = document.getElementById("player-episode-label");
-
-  if (episodeLabel) episodeLabel.textContent = "";
+  document.getElementById("episode-navigation").hidden = true;
 
   updateServerName();
   setServerControlsVisible(false);
   showPlayNowScreen();
 }
+
+
+/* =========================
+   MOVIE PLAYER
+========================= */
 
 function showPlayNowScreen() {
   const container = document.querySelector(".video-container");
@@ -390,7 +618,10 @@ function unlockPlayer() {
     try {
       const parsed = new URL(adURL);
 
-      if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+      if (
+        parsed.protocol !== "https:" &&
+        parsed.protocol !== "http:"
+      ) {
         throw new Error("HTTP(S) required");
       }
 
@@ -406,7 +637,11 @@ function unlockPlayer() {
 
     } catch (error) {
       console.error("Invalid advertising URL:", error);
-      alert("The advertising URL is not valid. Please check the AD REDIRECT SETTINGS.");
+
+      alert(
+        "The advertising URL is not valid. Please check the AD REDIRECT SETTINGS."
+      );
+
       return;
     }
 
@@ -438,7 +673,11 @@ function loadMovieServer() {
   const source = MOVIE_SOURCES[currentServer];
 
   if (!source) {
-    showPlayerMessage("Server unavailable", "Please select another server.");
+    showPlayerMessage(
+      "Server unavailable",
+      "Please select another server."
+    );
+
     updateServerName();
     return;
   }
@@ -461,6 +700,7 @@ function loadMovieServer() {
         "Unsupported media type",
         "This content type is not supported."
       );
+
       return;
     }
 
@@ -572,8 +812,6 @@ function closeModal() {
   if (modal) modal.style.display = "none";
   if (container) container.innerHTML = "";
 
-  const wasMovie = currentItem && getMediaType(currentItem) === "movie";
-
   currentItem = null;
   currentServer = 0;
   playerUnlocked = false;
@@ -581,14 +819,6 @@ function closeModal() {
 
   setServerControlsVisible(false);
   updateServerName();
-
-  if (wasMovie) {
-    const url = new URL(window.location.href);
-
-    url.searchParams.delete("movie");
-
-    history.pushState({ home: true }, "", url);
-  }
 }
 
 
@@ -599,24 +829,51 @@ function closeModal() {
 async function openSeriesPage(id, pushState = true) {
   const token = ++seriesRequest;
 
+  movieRequest++;
+  currentMovie = null;
+  currentItem = null;
+
+  currentSeries = null;
+  currentSeasonEpisodes = [];
+
+  document.getElementById("details-kicker").textContent =
+    "SERIES DETAILS";
+
+  document.getElementById("details-play-btn").textContent =
+    "▶ Play First Episode";
+
+  document.getElementById("details-play-btn").onclick =
+    playFirstEpisode;
+
+  document.getElementById("details-list-kicker").textContent =
+    "WATCH EPISODES";
+
+  document.getElementById("details-list-title").textContent =
+    "Episodes";
+
+  document.getElementById("season-control").hidden = false;
+
   const home = document.getElementById("home-content");
   const banner = document.getElementById("banner");
   const page = document.getElementById("series-page");
+  const search = document.getElementById("search-section");
 
   if (!home || !page) return;
 
   home.hidden = true;
-  banner.hidden = true;
 
-  document.getElementById("search-section").hidden = true;
+  if (banner) banner.hidden = true;
+  if (search) search.hidden = true;
 
   page.hidden = false;
+
   page.scrollIntoView({
     behavior: "smooth",
     block: "start"
   });
 
-  document.getElementById("series-title").textContent = "Loading series...";
+  document.getElementById("series-title").textContent =
+    "Loading series...";
 
   document.getElementById("series-overview").textContent =
     "Fetching series information...";
@@ -635,7 +892,8 @@ async function openSeriesPage(id, pushState = true) {
   if (token !== seriesRequest) return;
 
   if (!data) {
-    document.getElementById("series-title").textContent = "Series unavailable";
+    document.getElementById("series-title").textContent =
+      "Series unavailable";
 
     document.getElementById("series-overview").textContent =
       "Could not load series details. Please try again.";
@@ -647,7 +905,6 @@ async function openSeriesPage(id, pushState = true) {
   }
 
   currentSeries = data;
-  currentSeasonEpisodes = [];
 
   const poster = document.getElementById("series-poster");
 
@@ -677,7 +934,11 @@ async function openSeriesPage(id, pushState = true) {
       : "",
     data.number_of_episodes
       ? `${data.number_of_episodes} Episodes`
-      : ""
+      : "",
+    (data.genres || [])
+      .slice(0, 3)
+      .map(genre => genre.name)
+      .join(" • ")
   ].filter(Boolean).forEach(value => {
     const span = document.createElement("span");
     span.textContent = value;
@@ -688,7 +949,8 @@ async function openSeriesPage(id, pushState = true) {
     const rating = document.createElement("span");
 
     rating.className = "rating";
-    rating.textContent = `★ ${Number(data.vote_average).toFixed(1)}/10`;
+    rating.textContent =
+      `★ ${Number(data.vote_average).toFixed(1)}/10`;
 
     meta.appendChild(rating);
   }
@@ -726,6 +988,8 @@ async function openSeriesPage(id, pushState = true) {
     token
   );
 
+  if (token !== seriesRequest) return;
+
   if (pushState) {
     const url = new URL(window.location.href);
 
@@ -736,6 +1000,11 @@ async function openSeriesPage(id, pushState = true) {
     history.pushState({ tv: id }, "", url);
   }
 }
+
+
+/* =========================
+   LOAD SEASON EPISODES
+========================= */
 
 async function loadSeasonEpisodes(
   seasonNumber,
@@ -992,13 +1261,16 @@ async function navigateEpisode(direction) {
 
 
 /* =========================
-   SERIES AND HOME NAVIGATION
+   HOME NAVIGATION
 ========================= */
 
 function closeSeriesPage() {
   seriesRequest++;
+  movieRequest++;
 
   currentSeries = null;
+  currentMovie = null;
+  currentItem = null;
   currentSeasonEpisodes = [];
 
   const page = document.getElementById("series-page");
@@ -1045,6 +1317,20 @@ function goHome(event) {
 ========================= */
 
 function getShareDetails() {
+  if (currentMovie) {
+    const url = new URL(window.location.href);
+
+    url.searchParams.set("movie", String(currentMovie.id));
+    url.searchParams.delete("tv");
+    url.searchParams.delete("season");
+
+    return {
+      title: currentMovie.title || "MovieFlixHD Movie",
+      url: url.toString(),
+      type: "movie"
+    };
+  }
+
   if (currentSeries) {
     const url = new URL(window.location.href);
 
@@ -1156,7 +1442,7 @@ async function shareTo(platform) {
       `https://www.facebook.com/sharer/sharer.php?u=${encodedURL}`,
 
     messenger:
-      `https://www.messenger.com/`,
+      "https://www.messenger.com/",
 
     whatsapp:
       `https://api.whatsapp.com/send?text=${encodedText}%20${encodedURL}`,
@@ -1232,34 +1518,6 @@ function showShareFeedback(message) {
    DIRECT SHARE LINKS
 ========================= */
 
-function showDetailsFromRoute(item) {
-  currentItem = item;
-  currentServer = 0;
-  playerUnlocked = false;
-  selectedEpisodeIndex = -1;
-
-  const modal = document.getElementById("modal");
-
-  modal.style.display = "flex";
-
-  document.getElementById("modal-title").textContent =
-    item.title || "Untitled";
-
-  document.getElementById("modal-description").textContent =
-    item.overview || "No description available.";
-
-  document.getElementById("player-heading-title").textContent =
-    item.title || "MovieFlixHD Player";
-
-  document.getElementById("player-episode-label").textContent = "";
-
-  document.getElementById("episode-navigation").hidden = true;
-
-  updateServerName();
-  setServerControlsVisible(false);
-  showPlayNowScreen();
-}
-
 function handleRoute() {
   const params = new URLSearchParams(window.location.search);
 
@@ -1268,22 +1526,31 @@ function handleRoute() {
   const seasonNumber = params.get("season");
 
   if (tvId) {
-    openSeriesPage(tvId, false);
+    openSeriesPage(tvId, false).then(() => {
+      if (
+        seasonNumber &&
+        currentSeries &&
+        String(currentSeries.id) === String(tvId)
+      ) {
+        const select = document.getElementById("season-select");
+
+        if (
+          select &&
+          [...select.options].some(option =>
+            option.value === String(seasonNumber)
+          )
+        ) {
+          select.value = String(seasonNumber);
+          loadSeasonEpisodes(seasonNumber);
+        }
+      }
+    });
+
     return;
   }
 
   if (movieId) {
-    fetchJSON(
-      createTMDBUrl(`/movie/${encodeURIComponent(movieId)}`, {
-        language: "en-US"
-      })
-    ).then(data => {
-      if (data) {
-        data.media_type = "movie";
-        showDetailsFromRoute(data);
-      }
-    });
-
+    openMoviePage(movieId, false);
     return;
   }
 
@@ -1397,9 +1664,17 @@ async function init() {
   const tvContainer = document.getElementById("tvshows-list");
   const animeContainer = document.getElementById("anime-list");
 
-  if (movieContainer) movieContainer.innerHTML = "<p>Loading movies...</p>";
-  if (tvContainer) tvContainer.innerHTML = "<p>Loading TV shows...</p>";
-  if (animeContainer) animeContainer.innerHTML = "<p>Loading anime...</p>";
+  if (movieContainer) {
+    movieContainer.innerHTML = "<p>Loading movies...</p>";
+  }
+
+  if (tvContainer) {
+    tvContainer.innerHTML = "<p>Loading TV shows...</p>";
+  }
+
+  if (animeContainer) {
+    animeContainer.innerHTML = "<p>Loading anime...</p>";
+  }
 
   const [movies, tvShows, anime] = await Promise.all([
     fetchMovies(),
