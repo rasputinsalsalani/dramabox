@@ -229,3 +229,297 @@
     margin-top: 30px;
   }
 }
+
+/* ==========================================
+   MOVIEFLIXHD - JS COMPATIBILITY & FINAL FIX
+========================================== */
+
+/* POSTER WRAPPER */
+
+.movie-card {
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.poster-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  background: #171d28;
+  border-radius: 10px 10px 0 0;
+}
+
+.poster-wrap img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .35s ease, filter .35s ease;
+}
+
+.movie-card:hover .poster-wrap img {
+  transform: scale(1.045);
+}
+
+/* YELLOW RATING BADGE */
+
+.movie-card-rating {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  z-index: 2;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: rgba(0,0,0,.82);
+  color: #ffd43b !important;
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: 0 3px 10px rgba(0,0,0,.3);
+}
+
+/* MOVIE CARD TEXT */
+
+.movie-card-info {
+  padding: 11px;
+  min-width: 0;
+}
+
+.movie-card-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 800;
+}
+
+.movie-card-meta {
+  margin-top: 5px;
+  color: #9aa3b2;
+  font-size: 12px;
+}
+
+/* PLAYER MODAL */
+
+#modal[hidden],
+#share-modal[hidden],
+#series-page[hidden],
+#home-content[hidden],
+#search-results[hidden],
+.player-controls[hidden] {
+  display: none !important;
+}
+
+.player-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.server-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.server-btn {
+  min-width: 100px;
+  padding: 11px 16px;
+  border: 1px solid #303949;
+  border-radius: 8px;
+  background: #171d28;
+  color: #fff;
+  cursor: pointer;
+}
+
+.server-btn.active {
+  background: linear-gradient(110deg,#e50924,#ff354d);
+  border-color: #ff354d;
+  color: #fff;
+}
+
+#video-container {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  position: relative;
+  overflow: hidden;
+  background: #050609;
+  border-radius: 10px;
+}
+
+#video-container iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 250px;
+  border: 0;
+  background: #000;
+}
+
+/* WATCH NOW SCREEN */
+
+.play-now-message {
+  width: 100%;
+  height: 100%;
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  text-align: center;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(229,9,36,.13),
+      transparent 65%
+    ),
+    #080a0f;
+}
+
+.play-now-message h2 {
+  margin-bottom: 10px;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.play-now-message p {
+  color: #aeb6c5;
+  font-size: 14px;
+}
+
+.play-now-btn {
+  margin-top: 15px;
+  padding: 13px 27px;
+  border: 0;
+  border-radius: 7px;
+  background: linear-gradient(110deg,#e50924,#ff354d);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 5px 20px rgba(229,9,36,.3);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.play-now-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(229,9,36,.45);
+}
+
+/* PLAYER DESCRIPTION */
+
+#player-info {
+  margin-top: 12px;
+  color: #b9c1ce;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* EPISODE NAVIGATION */
+
+.episode-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.episode-navigation button {
+  padding: 9px 15px;
+  border: 1px solid #303949;
+  border-radius: 7px;
+  background: #171d28;
+  color: #fff;
+  cursor: pointer;
+}
+
+.episode-navigation button:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+/* SEARCH RESULTS */
+
+#search-results-list {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(135px, 1fr)
+  );
+  gap: 16px;
+}
+
+.search-message {
+  color: #aeb6c5;
+  padding: 20px 0;
+}
+
+/* DETAILS POSTER */
+
+.series-poster-wrap {
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.series-poster-wrap img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* EPISODE IMAGE */
+
+.episode-card img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* MOBILE PLAYER */
+
+@media (max-width: 600px) {
+  .movie-card-title {
+    font-size: 12px;
+  }
+
+  .movie-card-rating {
+    top: 6px;
+    right: 6px;
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+
+  .player-controls {
+    gap: 7px;
+  }
+
+  .server-btn {
+    min-width: 85px;
+    padding: 9px 11px;
+    font-size: 12px;
+  }
+
+  #video-container iframe {
+    min-height: 190px;
+  }
+
+  .play-now-message {
+    min-height: 190px;
+  }
+
+  .play-now-message h2 {
+    font-size: 18px;
+  }
+}
+
