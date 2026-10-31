@@ -1,12 +1,14 @@
 /* MovieFlixHD — TMDB-powered collections, search and 3-server player. */
 
 const encodedKey = "MWJkMjhkZWU5NTMzYTBiMWVkMjkyNTQ5ZDgyNmY4OGI=";
+const TMDB_API_KEY = atob(encodedKey);
+
 const TMDB_BASE = "https://api.themoviedb.org/3";
 const TMDB_IMAGE = "https://image.tmdb.org/t/p/w500";
 const TMDB_BACKDROP = "https://image.tmdb.org/t/p/original";
 const NO_POSTER = "https://placehold.co/500x750/151820/ffffff?text=No+Poster";
 
-// Retained from your previous JS. Use these only for content you are authorized to stream.
+// Use video sources only for content you are authorized to stream.
 const VIDEO_SERVERS = [
   {
     movie: id => `https://vidsrc.sh/embed/movie/${id}`,
@@ -26,7 +28,6 @@ const VIDEO_SERVERS = [
 ];
 
 const $ = id => document.getElementById(id);
-
 const modal = $('playerModal');
 
 let currentItem = null;
@@ -34,8 +35,6 @@ let activeServer = 1;
 let searchTimer = null;
 let searchSequence = 0;
 
-
-// TMDB API REQUEST
 async function tmdb(path, params = {}) {
   if (!TMDB_API_KEY || TMDB_API_KEY.includes('PASTE_YOUR')) {
     throw new Error('Add your TMDB API key in the TMDB_API_KEY setting.');
@@ -59,8 +58,6 @@ async function tmdb(path, params = {}) {
   return response.json();
 }
 
-
-// MOVIE INFORMATION
 function titleOf(item) {
   return item.title || item.name || 'Untitled';
 }
@@ -91,8 +88,6 @@ function posterUrl(item) {
     : NO_POSTER;
 }
 
-
-// CREATE MOVIE CARD
 function createCard(item, tag = 'TRENDING') {
   const card = document.createElement('article');
 
@@ -104,10 +99,8 @@ function createCard(item, tag = 'TRENDING') {
   const poster = document.createElement('div');
 
   poster.className = 'poster';
-
   poster.style.backgroundImage =
     `linear-gradient(0deg,rgba(0,0,0,.78),transparent 65%),url("${posterUrl(item)}")`;
-
   poster.style.backgroundSize = 'cover';
   poster.style.backgroundPosition = 'center';
 
@@ -160,8 +153,6 @@ function createCard(item, tag = 'TRENDING') {
   return card;
 }
 
-
-// DISPLAY MOVIE LIST
 function renderList(elementId, items, tag) {
   const grid = $(elementId);
 
@@ -175,7 +166,6 @@ function renderList(elementId, items, tag) {
     message.textContent = 'No titles are available right now.';
 
     grid.appendChild(message);
-
     return;
   }
 
@@ -184,8 +174,6 @@ function renderList(elementId, items, tag) {
   });
 }
 
-
-// OPEN PLAYER MODAL
 function openPlayer(item) {
   currentItem = item;
   activeServer = 1;
@@ -210,8 +198,6 @@ function openPlayer(item) {
   modal.classList.add('open');
 }
 
-
-// SERVER SELECTION
 function setServer(number) {
   activeServer = number;
 
@@ -221,7 +207,6 @@ function setServer(number) {
     const selected = Number(button.dataset.server) === number;
 
     button.classList.toggle('active', selected);
-
     button.setAttribute('aria-pressed', String(selected));
   });
 
@@ -230,8 +215,6 @@ function setServer(number) {
   }
 }
 
-
-// LOAD SELECTED SERVER
 function loadSelectedServer() {
   const container = $('videoContainer');
 
@@ -240,7 +223,6 @@ function loadSelectedServer() {
   if (!currentItem) return;
 
   const type = mediaTypeOf(currentItem);
-
   const source = VIDEO_SERVERS[activeServer - 1];
 
   if (
@@ -254,7 +236,6 @@ function loadSelectedServer() {
       'This title cannot be loaded from the selected server.';
 
     container.appendChild(message);
-
     return;
   }
 
@@ -274,8 +255,6 @@ function loadSelectedServer() {
   container.appendChild(frame);
 }
 
-
-// CLOSE PLAYER
 function closePlayer() {
   modal.classList.remove('open');
 
@@ -284,8 +263,6 @@ function closePlayer() {
   currentItem = null;
 }
 
-
-// LOAD HOMEPAGE COLLECTIONS
 async function loadHome() {
   ['movieGrid', 'showGrid', 'animeGrid'].forEach(id => {
     const grid = $(id);
@@ -298,9 +275,7 @@ async function loadHome() {
   try {
     const [movies, shows, anime] = await Promise.all([
       tmdb('/trending/movie/week'),
-
       tmdb('/trending/tv/week'),
-
       tmdb('/discover/tv', {
         with_genres: '16',
         sort_by: 'popularity.desc'
@@ -325,20 +300,14 @@ async function loadHome() {
     }));
 
     renderList('movieGrid', movieItems, 'MOVIE');
-
     renderList('showGrid', showItems, 'SERIES');
-
     renderList('animeGrid', animeItems, 'ANIME');
 
-
-    // FEATURED MOVIE
     const featured = movieItems[0] || showItems[0];
 
     if (featured) {
       const heroTitle = document.querySelector('.hero h1');
-
       const heroDesc = document.querySelector('.hero-content > p');
-
       const heroMeta = document.querySelector('.hero-meta');
 
       if (heroTitle) {
@@ -383,8 +352,6 @@ async function loadHome() {
   }
 }
 
-
-// SEARCH MOVIES AND SHOWS
 async function searchTMDB(query) {
   const sequence = ++searchSequence;
 
@@ -418,13 +385,10 @@ async function searchTMDB(query) {
   }
 }
 
-
-// WATCH NOW BUTTON
+// Watch Now button
 $('watchNow').addEventListener('click', () => {
   $('videoContainer').hidden = false;
-
   $('playerControls').hidden = false;
-
   $('watchNow').hidden = true;
 
   $('modalTag').textContent = 'NOW PLAYING';
@@ -432,42 +396,34 @@ $('watchNow').addEventListener('click', () => {
   loadSelectedServer();
 });
 
-
-// SERVER BUTTONS
+// Server selection
 document.querySelectorAll('.server-btn').forEach(button => {
   button.addEventListener('click', () => {
     setServer(Number(button.dataset.server));
   });
 });
 
-
-// NEXT SERVER BUTTON
+// Next server
 $('nextServer').addEventListener('click', () => {
   setServer(activeServer % VIDEO_SERVERS.length + 1);
 });
 
-
-// CLOSE BUTTON
+// Close player
 $('closeModal').addEventListener('click', closePlayer);
 
-
-// CLICK OUTSIDE MODAL
 modal.addEventListener('click', event => {
   if (event.target === modal) {
     closePlayer();
   }
 });
 
-
-// ESC KEY
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape') {
     closePlayer();
   }
 });
 
-
-// SEARCH INPUT
+// Search input
 $('search').addEventListener('input', event => {
   const query = event.target.value.trim();
 
@@ -483,7 +439,6 @@ $('search').addEventListener('input', event => {
     }
 
     loadHome();
-
     return;
   }
 
@@ -492,6 +447,5 @@ $('search').addEventListener('input', event => {
   }, 450);
 });
 
-
-// INITIALIZE WEBSITE
+// Initialize MovieFlixHD
 loadHome();
