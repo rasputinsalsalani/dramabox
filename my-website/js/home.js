@@ -1,32 +1,497 @@
-/* MovieFlixHD fixed JS: IDs match the included index.html */
-(()=>{
-const KEY=atob('MWJkMjhkZWU5NTMzYTBiMWVkMjkyNTQ5ZDgyNmY4OGI='),API='https://api.themoviedb.org/3',IMG='https://image.tmdb.org/t/p/w500',BG='https://image.tmdb.org/t/p/original',AD='https://directyp.org/4/02b9737bd4da1e3a14a820f0ce61a20d';
-const SOURCES=[{m:id=>`https://vidsrc.sh/embed/movie/${id}`,t:(id,s,e)=>`https://vidsrc.sh/embed/tv/${id}/${s}/${e}`},{m:id=>`https://embed.vidrift.net/embed/movie/${id}`,t:(id,s,e)=>`https://embed.vidrift.net/embed/tv/${id}/${s}/${e}`},{m:id=>`https://embedwave.cc/embed/movie/${id}`,t:(id,s,e)=>`https://embedwave.cc/embed/tv/${id}/${s}/${e}`}];
-const $=id=>document.getElementById(id),api=async(path,params={})=>{try{let u=new URL(API+path);u.searchParams.set('api_key',KEY);Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,v));let r=await fetch(u);if(!r.ok)throw Error(r.status);return await r.json()}catch(e){console.error('TMDB:',e);return null}};
-let movie=null,series=null,item=null,bannerItem=null,shareData=null,seasonEpisodes=[],episodeIndex=-1,server=0,unlocked=false,movieSeq=0,tvSeq=0,searchSeq=0,timer;
-const title=x=>x.title||x.name||'Untitled',kind=x=>x.media_type||(x.title?'movie':'tv'),year=x=>(x.release_date||x.first_air_date||'').slice(0,4)||'N/A',rate=x=>Number(x.vote_average)>0?Number(x.vote_average).toFixed(1):'N/A';
-function setPoster(img,path){img.src=path?IMG+path:'https://placehold.co/500x750/151820/ffffff?text=No+Poster';img.onerror=()=>{img.onerror=null;img.src='https://placehold.co/500x750/151820/ffffff?text=No+Poster'}}
-function makeCard(x){let c=document.createElement('article');c.className='movie-card';c.tabIndex=0;c.setAttribute('role','button');let im=document.createElement('img');im.alt=title(x)+' poster';im.loading='lazy';setPoster(im,x.poster_path);let info=document.createElement('div');info.className='movie-card-info';let n=document.createElement('div');n.className='movie-card-title';n.textContent=title(x);let meta=document.createElement('div');meta.className='movie-card-meta';let y=document.createElement('span');y.textContent=year(x);let r=document.createElement('span');r.className='movie-card-rating';r.textContent='★ '+rate(x);meta.append(y,r);info.append(n,meta);c.append(im,info);let open=()=>showDetails(x);c.onclick=open;c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}};return c}
-function render(id,items){let box=$(id);box.replaceChildren();if(!items?.length){box.textContent='No titles available right now.';return}items.slice(0,18).forEach(x=>box.append(makeCard(x)))}
-function showDetails(x){kind(x)==='tv'?openSeries(x.id):openMovie(x.id)}
-function page(){ $('home-content').hidden=true;$('search-results').hidden=true;$('series-page').hidden=false;window.scrollTo(0,0)}
-function historyUrl(key,id){let u=new URL(location.href);['movie','tv','season'].forEach(k=>u.searchParams.delete(k));u.searchParams.set(key,id);history.pushState({[key]:id},'',u)}
-async function openMovie(id,push=true){let seq=++movieSeq;tvSeq++;movie=null;series=null;seasonEpisodes=[];page();$('details-kicker').textContent='MOVIE DETAILS';$('series-title').textContent='Loading movie...';$('series-overview').textContent='Fetching movie information...';$('details-primary-btn').textContent='▶ PLAY MOVIE';$('details-primary-btn').onclick=playMovie;$('episodes-section').hidden=true;$('movie-suggestions-section').hidden=false;$('movie-suggestions-list').textContent='Loading recommendations...';let [data,recs]=await Promise.all([api('/movie/'+id,{language:'en-US'}),api('/movie/'+id+'/recommendations',{language:'en-US'})]);if(seq!==movieSeq)return;if(!data){$('series-title').textContent='Movie unavailable';$('series-overview').textContent='Could not load movie details. Please try again.';return}movie=data;setPoster($('series-poster'),data.poster_path);$('series-title').textContent=title(data);$('series-overview').textContent=data.overview||'No description available.';let meta=$('series-meta');meta.replaceChildren();[year(data),data.runtime?data.runtime+' min':'',(data.genres||[]).slice(0,3).map(g=>g.name).join(' • '),Number(data.vote_average)>0?'★ '+rate(data)+'/10':''].filter(Boolean).forEach(v=>{let s=document.createElement('span');s.textContent=v;meta.append(s)});let list=$('movie-suggestions-list');list.replaceChildren();let results=(recs?.results||[]).filter(x=>x.poster_path);if(!results.length)list.textContent='No movie suggestions available right now.';else results.slice(0,12).forEach(x=>{x.media_type='movie';list.append(makeCard(x))});if(push)historyUrl('movie',id)}
-function playMovie(){if(!movie)return;item={...movie,media_type:'movie'};openPlayer(title(movie),movie.overview||'')}
-async function openSeries(id,push=true){let seq=++tvSeq;movieSeq++;movie=null;series=null;seasonEpisodes=[];page();$('details-kicker').textContent='SERIES DETAILS';$('series-title').textContent='Loading series...';$('series-overview').textContent='Fetching series information...';$('details-primary-btn').textContent='▶ PLAY FIRST EPISODE';$('details-primary-btn').onclick=playFirst;$('episodes-section').hidden=false;$('movie-suggestions-section').hidden=true;$('season-control').hidden=false;$('episodes-list').textContent='Loading seasons and episodes...';let data=await api('/tv/'+id,{language:'en-US'});if(seq!==tvSeq)return;if(!data){$('series-title').textContent='Series unavailable';$('series-overview').textContent='Could not load series details.';return}series=data;setPoster($('series-poster'),data.poster_path);$('series-title').textContent=title(data);$('series-overview').textContent=data.overview||'No description available.';let meta=$('series-meta');meta.replaceChildren();[year(data),data.number_of_seasons?data.number_of_seasons+' Seasons':'',data.number_of_episodes?data.number_of_episodes+' Episodes':'',(data.genres||[]).slice(0,3).map(g=>g.name).join(' • '),Number(data.vote_average)>0?'★ '+rate(data)+'/10':''].filter(Boolean).forEach(v=>{let s=document.createElement('span');s.textContent=v;meta.append(s)});let seasons=(data.seasons||[]).filter(s=>s.season_number>=0),sel=$('season-select');sel.replaceChildren();seasons.forEach(s=>{let o=document.createElement('option');o.value=s.season_number;o.textContent=s.name||'Season '+s.season_number;sel.append(o)});if(!seasons.length){$('episodes-list').textContent='No seasons available.';return}let first=seasons.find(s=>s.season_number===1)||seasons[0];sel.value=first.season_number;await loadSeason(first.season_number,false,seq);if(push)historyUrl('tv',id)}
-async function loadSeason(sn,update=false,seq=tvSeq){if(!series)return;$('episodes-list').textContent='Loading episodes...';let data=await api(`/tv/${series.id}/season/${sn}`,{language:'en-US'});if(seq!==tvSeq||!series)return;seasonEpisodes=data?.episodes||[];let list=$('episodes-list');list.replaceChildren();if(!seasonEpisodes.length){list.textContent='No episodes listed for this season.';return}seasonEpisodes.forEach((ep,i)=>{let c=document.createElement('article');c.className='episode-card';c.tabIndex=0;c.setAttribute('role','button');let im=document.createElement('img');im.alt=ep.name||'Episode';im.src=ep.still_path?IMG+ep.still_path:'https://placehold.co/640x360/151820/ffffff?text=Episode';im.onerror=()=>{im.onerror=null;im.src='https://placehold.co/640x360/151820/ffffff?text=Episode'};let d=document.createElement('div'),num=document.createElement('span'),h=document.createElement('h3'),p=document.createElement('p'),rt=document.createElement('span');num.className='episode-number';num.textContent='EPISODE '+ep.episode_number;h.textContent=ep.name||'Episode '+ep.episode_number;p.textContent=ep.overview||'No episode description available.';rt.className='episode-runtime';rt.textContent=ep.runtime?ep.runtime+' min':(ep.air_date||'');d.append(num,h,p,rt);c.append(im,d);let play=()=>openEpisode(i);c.onclick=play;c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();play()}};list.append(c)});if(update){let u=new URL(location.href);u.searchParams.set('tv',series.id);u.searchParams.set('season',sn);history.replaceState({tv:series.id,season:sn},'',u)}}
-function playFirst(){if(!seasonEpisodes.length){alert('No episodes available.');return}openEpisode(0)}
-function openEpisode(i){let ep=seasonEpisodes[i];if(!series||!ep)return;episodeIndex=i;item={id:series.id,name:series.name,media_type:'tv',season_number:Number($('season-select').value),episode_number:ep.episode_number,episode_name:ep.name||'Episode '+ep.episode_number,episode_overview:ep.overview||''};openPlayer(item.episode_name,item.episode_overview||series.overview||'');$('episode-navigation').hidden=false;$('episode-nav-label').textContent=`S${item.season_number} · E${item.episode_number}`;$('prev-episode-btn').disabled=i===0;$('next-episode-btn').disabled=i===seasonEpisodes.length-1}
-function openPlayer(t,d){$('modal').hidden=false;$('player-title').textContent=t;$('player-subtitle').textContent=d;$('player-controls').hidden=true;$('episode-navigation').hidden=true;unlocked=false;server=0;let b=document.createElement('button');b.textContent='▶ PLAY NOW';b.onclick=unlock;$('video-container').replaceChildren(b)}
-function unlock(){if(!item||unlocked)return;if(AD){let w=window.open(AD,'_blank','noopener,noreferrer');if(!w)alert('Please allow pop-ups for the ad page.')}unlocked=true;$('player-controls').hidden=false;loadServer()}
-function loadServer(){if(!item||!unlocked)return;let s=SOURCES[server],src=item.media_type==='movie'?s.m(item.id):s.t(item.id,item.season_number,item.episode_number),f=document.createElement('iframe');f.src=src;f.title='MovieFlixHD Player';f.allow='autoplay; fullscreen; picture-in-picture';f.allowFullscreen=true;$('video-container').replaceChildren(f);$('server-name').textContent='Server '+(server+1);document.querySelectorAll('.server-btn').forEach(b=>b.classList.toggle('active',Number(b.dataset.server)===server))}
-window.selectServer=i=>{if(!unlocked||i<0||i>=SOURCES.length)return;server=i;loadServer()};window.navigateEpisode=async dir=>{if(!series||!item)return;let next=episodeIndex+dir,was=unlocked;if(next>=0&&next<seasonEpisodes.length){openEpisode(next);if(was){unlocked=true;$('player-controls').hidden=false;loadServer()}return}let sel=$('season-select'),vals=[...sel.options].map(o=>+o.value),pos=vals.indexOf(+sel.value),sn=vals[pos+dir];if(sn===undefined)return;sel.value=sn;await loadSeason(sn,true);if(seasonEpisodes.length){openEpisode(dir>0?0:seasonEpisodes.length-1);if(was){unlocked=true;$('player-controls').hidden=false;loadServer()}}};window.closeModal=()=>{$('modal').hidden=true;$('video-container').replaceChildren();$('player-controls').hidden=true;item=null;unlocked=false;episodeIndex=-1};
-window.goHome=e=>{if(e)e.preventDefault();movieSeq++;tvSeq++;movie=series=item=null;$('series-page').hidden=true;let q=$('search-input').value.trim();$('home-content').hidden=!!q;$('search-results').hidden=!q;let u=new URL(location.href);['movie','tv','season'].forEach(k=>u.searchParams.delete(k));history.pushState({},'',u);scrollTo(0,0);return false};
-function shareDetails(){let x=movie||series;if(!x)return null;let u=new URL(location.href);['movie','tv','season'].forEach(k=>u.searchParams.delete(k));u.searchParams.set(movie?'movie':'tv',x.id);return{title:title(x),url:u.toString(),type:movie?'movie':'series'}}
-window.openSharePopup=()=>{shareData=shareDetails();if(!shareData)return;$('share-modal-title').textContent='Share '+shareData.type;$('share-modal-description').textContent='Share “'+shareData.title+'”';$('share-popup-feedback').textContent='';$('share-modal').hidden=false};window.closeSharePopup=()=>$('share-modal').hidden=true;
-async function copy(text){try{await navigator.clipboard.writeText(text)}catch(e){let a=document.createElement('textarea');a.value=text;document.body.append(a);a.select();document.execCommand('copy');a.remove()}}
-window.shareTo=async p=>{if(!shareData)shareData=shareDetails();if(!shareData)return;let u=encodeURIComponent(shareData.url),t=encodeURIComponent('Watch '+shareData.title+' on MovieFlixHD'),dest={facebook:`https://www.facebook.com/sharer/sharer.php?u=${u}`,whatsapp:`https://api.whatsapp.com/send?text=${t}%20${u}`,telegram:`https://t.me/share/url?url=${u}&text=${t}`,x:`https://twitter.com/intent/tweet?url=${u}&text=${t}`};if(['copy','tiktok','messenger'].includes(p)){await copy(shareData.url);$('share-popup-feedback').textContent='Link copied!';if(p!=='copy')window.open(p==='tiktok'?'https://www.tiktok.com/':'https://www.messenger.com/','_blank','noopener,noreferrer');return}if(dest[p])window.open(dest[p],'_blank','noopener,noreferrer,width=700,height=600')};
-$('season-select').addEventListener('change',e=>loadSeason(e.target.value,true));$('search-input').addEventListener('input',e=>search(e.target.value));$('search-btn').onclick=()=>search($('search-input').value);async function search(q){clearTimeout(timer);q=q.trim();if(!q){searchSeq++;$('search-results').hidden=true;$('home-content').hidden=false;return}$('home-content').hidden=true;$('search-results').hidden=false;$('search-results-list').textContent='Searching...';timer=setTimeout(async()=>{let seq=++searchSeq,data=await api('/search/multi',{query:q,include_adult:'false'});if(seq!==searchSeq)return;render('search-results-list',(data?.results||[]).filter(x=>['movie','tv'].includes(x.media_type)))},350)}
-function route(){let p=new URLSearchParams(location.search),tv=p.get('tv'),m=p.get('movie'),sn=p.get('season');if(tv){openSeries(tv,false).then(()=>{if(sn&&series){$('season-select').value=sn;loadSeason(sn,false)}})}else if(m)openMovie(m,false);else window.goHome()};window.addEventListener('popstate',route);document.addEventListener('click',e=>{if(e.target===$('modal'))window.closeModal();if(e.target===$('share-modal'))window.closeSharePopup()});document.addEventListener('keydown',e=>{if(e.key==='Escape'){window.closeModal();window.closeSharePopup()}});
-async function init(){$('year').textContent=new Date().getFullYear();let [m,t,a]=await Promise.all([api('/trending/movie/week'),api('/trending/tv/week'),api('/trending/tv/week')]);let movies=m?.results||[],shows=(t?.results||[]).filter(x=>!(x.genre_ids||[]).includes(16)),anime=(a?.results||[]).filter(x=>(x.genre_ids||[]).includes(16));if(movies[0]){bannerItem=movies[0];$('banner-bg').style.backgroundImage=movies[0].backdrop_path?`url("${BG+movies[0].backdrop_path}")`:'';$('banner-title').textContent=title(movies[0]);$('banner-meta').textContent=year(movies[0])+' • ★ '+rate(movies[0]);$('banner-overview').textContent=movies[0].overview||''}$('banner-play').onclick=()=>bannerItem&&showDetails(bannerItem);render('trending-movies',movies);render('popular-series',shows);render('popular-anime',anime);route()}init();
-})();
+/* MovieFlixHD — TMDB-powered collections, search and 3-server player. */
+
+const encodedKey = "MWJkMjhkZWU5NTMzYTBiMWVkMjkyNTQ5ZDgyNmY4OGI=";
+const TMDB_BASE = "https://api.themoviedb.org/3";
+const TMDB_IMAGE = "https://image.tmdb.org/t/p/w500";
+const TMDB_BACKDROP = "https://image.tmdb.org/t/p/original";
+const NO_POSTER = "https://placehold.co/500x750/151820/ffffff?text=No+Poster";
+
+// Retained from your previous JS. Use these only for content you are authorized to stream.
+const VIDEO_SERVERS = [
+  {
+    movie: id => `https://vidsrc.sh/embed/movie/${id}`,
+    tv: (id, season, episode) =>
+      `https://vidsrc.sh/embed/tv/${id}/${season}/${episode}`
+  },
+  {
+    movie: id => `https://embed.vidrift.net/embed/movie/${id}`,
+    tv: (id, season, episode) =>
+      `https://embed.vidrift.net/embed/tv/${id}/${season}/${episode}`
+  },
+  {
+    movie: id => `https://embedwave.cc/embed/movie/${id}`,
+    tv: (id, season, episode) =>
+      `https://embedwave.cc/embed/tv/${id}/${season}/${episode}`
+  }
+];
+
+const $ = id => document.getElementById(id);
+
+const modal = $('playerModal');
+
+let currentItem = null;
+let activeServer = 1;
+let searchTimer = null;
+let searchSequence = 0;
+
+
+// TMDB API REQUEST
+async function tmdb(path, params = {}) {
+  if (!TMDB_API_KEY || TMDB_API_KEY.includes('PASTE_YOUR')) {
+    throw new Error('Add your TMDB API key in the TMDB_API_KEY setting.');
+  }
+
+  const url = new URL(`${TMDB_BASE}${path}`);
+
+  url.searchParams.set('api_key', TMDB_API_KEY);
+  url.searchParams.set('language', 'en-US');
+
+  Object.entries(params).forEach(([key, value]) => {
+    url.searchParams.set(key, value);
+  });
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`TMDB request failed (${response.status}).`);
+  }
+
+  return response.json();
+}
+
+
+// MOVIE INFORMATION
+function titleOf(item) {
+  return item.title || item.name || 'Untitled';
+}
+
+function yearOf(item) {
+  return (
+    item.release_date ||
+    item.first_air_date ||
+    ''
+  ).slice(0, 4) || 'N/A';
+}
+
+function ratingOf(item) {
+  const rating = Number(item.vote_average);
+
+  return Number.isFinite(rating) && rating > 0
+    ? rating.toFixed(1)
+    : 'N/A';
+}
+
+function mediaTypeOf(item) {
+  return item.media_type || (item.title ? 'movie' : 'tv');
+}
+
+function posterUrl(item) {
+  return item.poster_path
+    ? `${TMDB_IMAGE}${item.poster_path}`
+    : NO_POSTER;
+}
+
+
+// CREATE MOVIE CARD
+function createCard(item, tag = 'TRENDING') {
+  const card = document.createElement('article');
+
+  card.className = 'movie';
+  card.tabIndex = 0;
+  card.setAttribute('role', 'button');
+  card.dataset.search = titleOf(item).toLowerCase();
+
+  const poster = document.createElement('div');
+
+  poster.className = 'poster';
+
+  poster.style.backgroundImage =
+    `linear-gradient(0deg,rgba(0,0,0,.78),transparent 65%),url("${posterUrl(item)}")`;
+
+  poster.style.backgroundSize = 'cover';
+  poster.style.backgroundPosition = 'center';
+
+  const tagEl = document.createElement('span');
+
+  tagEl.className = 'poster-tag';
+  tagEl.textContent = tag;
+
+  const posterTitle = document.createElement('span');
+
+  posterTitle.className = 'poster-title';
+  posterTitle.textContent = titleOf(item);
+
+  poster.append(tagEl, posterTitle);
+
+  const info = document.createElement('div');
+
+  info.className = 'movie-info';
+
+  const heading = document.createElement('h3');
+
+  heading.textContent = titleOf(item);
+
+  const meta = document.createElement('p');
+
+  const date = document.createElement('span');
+
+  date.textContent =
+    `${yearOf(item)} · ${mediaTypeOf(item) === 'movie' ? 'Movie' : 'TV'}`;
+
+  const rating = document.createElement('b');
+
+  rating.textContent = `★ ${ratingOf(item)}`;
+
+  meta.append(date, rating);
+  info.append(heading, meta);
+  card.append(poster, info);
+
+  const open = () => openPlayer(item);
+
+  card.addEventListener('click', open);
+
+  card.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      open();
+    }
+  });
+
+  return card;
+}
+
+
+// DISPLAY MOVIE LIST
+function renderList(elementId, items, tag) {
+  const grid = $(elementId);
+
+  if (!grid) return;
+
+  grid.replaceChildren();
+
+  if (!items.length) {
+    const message = document.createElement('p');
+
+    message.textContent = 'No titles are available right now.';
+
+    grid.appendChild(message);
+
+    return;
+  }
+
+  items.slice(0, 18).forEach(item => {
+    grid.appendChild(createCard(item, tag));
+  });
+}
+
+
+// OPEN PLAYER MODAL
+function openPlayer(item) {
+  currentItem = item;
+  activeServer = 1;
+
+  $('playerTitle').textContent = titleOf(item);
+  $('modalTitle').textContent = titleOf(item);
+
+  $('modalDesc').textContent =
+    item.overview || 'No description is available for this title.';
+
+  $('modalTag').textContent =
+    `${mediaTypeOf(item) === 'movie' ? 'MOVIE' : 'TV SHOW'} DETAILS`;
+
+  $('videoContainer').replaceChildren();
+  $('videoContainer').hidden = true;
+
+  $('playerControls').hidden = true;
+  $('watchNow').hidden = false;
+
+  setServer(1);
+
+  modal.classList.add('open');
+}
+
+
+// SERVER SELECTION
+function setServer(number) {
+  activeServer = number;
+
+  $('serverName').textContent = `Server ${number}`;
+
+  document.querySelectorAll('.server-btn').forEach(button => {
+    const selected = Number(button.dataset.server) === number;
+
+    button.classList.toggle('active', selected);
+
+    button.setAttribute('aria-pressed', String(selected));
+  });
+
+  if (!$('playerControls').hidden && currentItem) {
+    loadSelectedServer();
+  }
+}
+
+
+// LOAD SELECTED SERVER
+function loadSelectedServer() {
+  const container = $('videoContainer');
+
+  container.replaceChildren();
+
+  if (!currentItem) return;
+
+  const type = mediaTypeOf(currentItem);
+
+  const source = VIDEO_SERVERS[activeServer - 1];
+
+  if (
+    !source ||
+    !currentItem.id ||
+    !['movie', 'tv'].includes(type)
+  ) {
+    const message = document.createElement('p');
+
+    message.textContent =
+      'This title cannot be loaded from the selected server.';
+
+    container.appendChild(message);
+
+    return;
+  }
+
+  const url = type === 'movie'
+    ? source.movie(currentItem.id)
+    : source.tv(currentItem.id, 1, 1);
+
+  const frame = document.createElement('iframe');
+
+  frame.src = url;
+  frame.title = `${titleOf(currentItem)} video player`;
+  frame.loading = 'lazy';
+  frame.allow = 'autoplay; fullscreen; picture-in-picture';
+  frame.allowFullscreen = true;
+  frame.referrerPolicy = 'strict-origin-when-cross-origin';
+
+  container.appendChild(frame);
+}
+
+
+// CLOSE PLAYER
+function closePlayer() {
+  modal.classList.remove('open');
+
+  $('videoContainer').replaceChildren();
+
+  currentItem = null;
+}
+
+
+// LOAD HOMEPAGE COLLECTIONS
+async function loadHome() {
+  ['movieGrid', 'showGrid', 'animeGrid'].forEach(id => {
+    const grid = $(id);
+
+    if (grid) {
+      grid.innerHTML = '<p>Loading titles…</p>';
+    }
+  });
+
+  try {
+    const [movies, shows, anime] = await Promise.all([
+      tmdb('/trending/movie/week'),
+
+      tmdb('/trending/tv/week'),
+
+      tmdb('/discover/tv', {
+        with_genres: '16',
+        sort_by: 'popularity.desc'
+      })
+    ]);
+
+    const movieItems = (movies.results || []).map(item => ({
+      ...item,
+      media_type: 'movie'
+    }));
+
+    const showItems = (shows.results || [])
+      .filter(item => !(item.genre_ids || []).includes(16))
+      .map(item => ({
+        ...item,
+        media_type: 'tv'
+      }));
+
+    const animeItems = (anime.results || []).map(item => ({
+      ...item,
+      media_type: 'tv'
+    }));
+
+    renderList('movieGrid', movieItems, 'MOVIE');
+
+    renderList('showGrid', showItems, 'SERIES');
+
+    renderList('animeGrid', animeItems, 'ANIME');
+
+
+    // FEATURED MOVIE
+    const featured = movieItems[0] || showItems[0];
+
+    if (featured) {
+      const heroTitle = document.querySelector('.hero h1');
+
+      const heroDesc = document.querySelector('.hero-content > p');
+
+      const heroMeta = document.querySelector('.hero-meta');
+
+      if (heroTitle) {
+        heroTitle.textContent = titleOf(featured);
+      }
+
+      if (heroDesc) {
+        heroDesc.textContent =
+          featured.overview ||
+          'Explore trending movies and series on MovieFlixHD.';
+      }
+
+      if (heroMeta) {
+        heroMeta.innerHTML = `
+          <span>${yearOf(featured)}</span>
+          <span>•</span>
+          <span class="rating">★ ${ratingOf(featured)}</span>
+          <span>•</span>
+          <span class="quality">TRENDING</span>
+        `;
+      }
+
+      if (featured.backdrop_path) {
+        document.querySelector('.hero').style.backgroundImage =
+          `linear-gradient(90deg,rgba(4,4,16,.94),rgba(4,4,16,.28)),url("${TMDB_BACKDROP}${featured.backdrop_path}")`;
+      }
+
+      $('heroPlay').onclick = () => openPlayer(featured);
+    }
+
+  } catch (error) {
+    console.error('MovieFlixHD:', error);
+
+    ['movieGrid', 'showGrid', 'animeGrid'].forEach(id => {
+      const grid = $(id);
+
+      if (grid) {
+        grid.innerHTML =
+          '<p>Unable to load titles. Check your TMDB API key and try again.</p>';
+      }
+    });
+  }
+}
+
+
+// SEARCH MOVIES AND SHOWS
+async function searchTMDB(query) {
+  const sequence = ++searchSequence;
+
+  try {
+    const data = await tmdb('/search/multi', {
+      query,
+      include_adult: 'false'
+    });
+
+    if (sequence !== searchSequence) return;
+
+    const results = (data.results || []).filter(item =>
+      ['movie', 'tv'].includes(item.media_type)
+    );
+
+    const heading = document.querySelector('#movies h2');
+
+    if (heading) {
+      heading.textContent = `Search results for “${query}”`;
+    }
+
+    renderList('movieGrid', results, 'SEARCH');
+
+    $('movies').scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+
+  } catch (error) {
+    console.error('Search failed:', error);
+  }
+}
+
+
+// WATCH NOW BUTTON
+$('watchNow').addEventListener('click', () => {
+  $('videoContainer').hidden = false;
+
+  $('playerControls').hidden = false;
+
+  $('watchNow').hidden = true;
+
+  $('modalTag').textContent = 'NOW PLAYING';
+
+  loadSelectedServer();
+});
+
+
+// SERVER BUTTONS
+document.querySelectorAll('.server-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    setServer(Number(button.dataset.server));
+  });
+});
+
+
+// NEXT SERVER BUTTON
+$('nextServer').addEventListener('click', () => {
+  setServer(activeServer % VIDEO_SERVERS.length + 1);
+});
+
+
+// CLOSE BUTTON
+$('closeModal').addEventListener('click', closePlayer);
+
+
+// CLICK OUTSIDE MODAL
+modal.addEventListener('click', event => {
+  if (event.target === modal) {
+    closePlayer();
+  }
+});
+
+
+// ESC KEY
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') {
+    closePlayer();
+  }
+});
+
+
+// SEARCH INPUT
+$('search').addEventListener('input', event => {
+  const query = event.target.value.trim();
+
+  clearTimeout(searchTimer);
+
+  if (!query) {
+    searchSequence++;
+
+    const heading = document.querySelector('#movies h2');
+
+    if (heading) {
+      heading.textContent = 'Trending Movies';
+    }
+
+    loadHome();
+
+    return;
+  }
+
+  searchTimer = setTimeout(() => {
+    searchTMDB(query);
+  }, 450);
+});
+
+
+// INITIALIZE WEBSITE
+loadHome();
