@@ -22,7 +22,7 @@ const STILL_PLACEHOLDER =
   "https://placehold.co/640x360/151820/ffffff?text=Episode";
 
 const AD_REDIRECT_URL =
-  "https://directyp.org/4/02b9737bd4da1e3a14a820f0ce61a20d";
+  "ads here";
 
 /* THREE VIDEO SERVERS */
 
