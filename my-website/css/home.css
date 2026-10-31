@@ -1,5 +1,5 @@
 
-/* MOVIEFLIXHD — MATCHED HTML + FIXED CSS */
+/* MOVIEFLIXHD — FINAL FIXED CSS */
 
 :root {
   --bg: #08090d;
@@ -268,6 +268,8 @@ select:focus-visible {
   text-shadow: 0 2px 10px rgba(0,0,0,.55);
 }
 
+/* WATCH NOW BUTTON */
+
 .primary-btn {
   margin-top: 22px;
   padding: 12px 25px;
@@ -286,6 +288,42 @@ select:focus-visible {
   box-shadow: 0 10px 32px rgba(229,9,36,.48);
 }
 
+/* Keep original banner button and its JavaScript click handler */
+
+#banner-play {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 145px;
+  min-height: 46px;
+  padding: 13px 27px !important;
+  border: none !important;
+  border-radius: 7px !important;
+  background: #e50924 !important;
+  color: #fff !important;
+  font-size: 0 !important;
+  font-weight: 900;
+  letter-spacing: .5px;
+  box-shadow: 0 5px 20px rgba(229,9,36,.35);
+  cursor: pointer;
+  transition: .25s ease;
+}
+
+#banner-play::after {
+  content: "▶  WATCH NOW";
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .5px;
+}
+
+#banner-play:hover {
+  background: #ff1e3d !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(229,9,36,.5);
+}
+
 /* HOME SECTIONS */
 
 .content-section,
@@ -300,7 +338,14 @@ select:focus-visible {
   justify-content: space-between;
   align-items: center;
   gap: 15px;
+  width: 100%;
   margin-bottom: 18px;
+}
+
+.section-heading > div {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
 }
 
 .section-heading .eyebrow,
@@ -326,15 +371,21 @@ select:focus-visible {
 .section-heading h2::after {
   content: "";
   display: block;
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 25px;
   height: 2px;
   border-radius: 20px;
-  background: linear-gradient(90deg,#ff334d 0%,#e50924 30%,rgba(229,9,36,.45) 72%,transparent 100%);
-  box-shadow: 0 0 10px rgba(229,9,36,.22);
+  background: linear-gradient(
+    90deg,
+    #ff334d 0%,
+    #e50924 45%,
+    rgba(229,9,36,.65) 80%,
+    rgba(229,9,36,.25) 100%
+  );
+  box-shadow: 0 0 10px rgba(229,9,36,.25);
 }
 
-/* POSTER GRID — SMALLER AND CONSISTENT */
+/* POSTER GRID */
 
 .movie-grid {
   display: grid;
@@ -1012,6 +1063,15 @@ select:focus-visible {
     margin-top: 18px;
   }
 
+  #banner-play {
+    min-height: 42px;
+    padding: 11px 20px !important;
+  }
+
+  #banner-play::after {
+    font-size: 12px;
+  }
+
   .content-section,
   .search-results {
     margin: 23px auto;
@@ -1024,7 +1084,7 @@ select:focus-visible {
 
   .section-heading h2 {
     font-size: 17px;
-    gap: 11px;
+    gap: 10px;
   }
 
   .movie-grid {
@@ -1227,26 +1287,4 @@ select:focus-visible {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--red);
-}
-/* WATCH NOW BUTTON */
-#banner-play {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  padding: 13px 27px;
-  min-width: 145px;
-  border: none;
-  border-radius: 7px;
-  background: #e50924;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: .5px;
-  box-shadow: 0 5px 20px rgba(229,9,36,.35);
-}
-
-#banner-play:hover {
-  background: #ff1e3d;
-  transform: translateY(-2px);
 }
