@@ -353,7 +353,6 @@
         media_type: "movie"
       };
 
-      // Clear old series and episode information.
       episodes = [];
       episodeIndex = 0;
       currentSeason = 1;
@@ -647,13 +646,10 @@
   // ==========================================
 
   function clearEpisodeNavigation() {
-    // Hide the episode navigation for movies.
     hide($("episode-navigation"));
 
-    // Clear any previous episode label.
     setText("episode-nav-label", "");
 
-    // Disable previous and next buttons.
     const previous = $("prev-episode-btn");
     const next = $("next-episode-btn");
 
@@ -662,7 +658,6 @@
   }
 
   function openMoviePlayer(movie) {
-    // Reset all old TV / anime playback data.
     currentSeries = null;
     currentMovie = movie;
 
@@ -678,7 +673,6 @@
     currentServer = 0;
     playerUnlocked = false;
 
-    // Ensure episode controls are hidden before opening movie.
     clearEpisodeNavigation();
 
     openPlayer(
@@ -709,11 +703,15 @@
       episode.overview || "No episode description available."
     );
 
-    // Show episode navigation only for TV / anime.
     show($("episode-navigation"));
 
     updateEpisodeNavigation();
   }
+
+  // ==========================================
+  // FIXED PLAYER SCREEN
+  // READY TO WATCH TEXT REMOVED
+  // ==========================================
 
   function openPlayer(title, subtitle, description = "") {
     setText("player-title", title);
@@ -725,12 +723,14 @@
     if (video) {
       video.innerHTML = `
         <div class="play-now-message">
-          <h2>READY TO WATCH?</h2>
-
-          <p>Press WATCH NOW to start watching.</p>
-
-          <button class="play-now-btn" id="unlock-player">
-            ▶ WATCH NOW
+          <button
+            class="play-now-btn"
+            id="unlock-player"
+            type="button"
+            aria-label="Play video"
+          >
+            <span aria-hidden="true">▶</span>
+            <span>PLAY NOW</span>
           </button>
         </div>
       `;
@@ -756,11 +756,8 @@
       SOURCES[currentServer].name
     );
 
-    // Show server controls.
     show(document.querySelector(".player-controls"));
 
-    // Always reset navigation first.
-    // openEpisode() will show it again for TV / anime.
     hide($("episode-navigation"));
 
     show(elements.modal);
@@ -768,18 +765,23 @@
     document.body.style.overflow = "hidden";
   }
 
+  // ==========================================
+  // AD REDIRECT + VIDEO UNLOCK
+  // ==========================================
+
   function unlockPlayer() {
     if (playerUnlocked) return;
 
     playerUnlocked = true;
 
-    // Open the configured advertising destination.
+    // Open the advertisement in a new tab.
     window.open(
       AD_URL,
       "_blank",
       "noopener,noreferrer"
     );
 
+    // Load the selected video.
     loadVideo();
   }
 
@@ -878,7 +880,6 @@
   }
 
   function navigateEpisode(direction) {
-    // Prevent episode navigation when playing a movie.
     if (!currentItem || currentItem.media_type !== "tv") {
       return;
     }
