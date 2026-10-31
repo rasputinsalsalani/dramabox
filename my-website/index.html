@@ -14,10 +14,15 @@
 <header class="header">
   <div class="header-inner">
     <a class="logo" href="./" onclick="return goHome(event)">
-      MOVIE<span>FLIXHD</span>
+      <span class="logo-play" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M8 5.8v12.4L18 12 8 5.8Z" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="logo-text">MOVIE<span>FLIXHD</span></span>
     </a>
 
-   <div class="search-box search-container" id="search-section">
+    <div class="search-box search-container" id="search-section">
       <input id="search-input" type="search"
         placeholder="Search movies, series and anime..."
         autocomplete="off">
@@ -50,7 +55,7 @@
         <div id="banner-meta" class="meta-line"></div>
         <p id="banner-overview"></p>
         <button id="banner-play" class="primary-btn" type="button">
-          WATCH MOVIE
+          ▶ WATCH MOVIE
         </button>
       </div>
     </section>
@@ -120,7 +125,7 @@
     </div>
 
     <section id="episodes-section" class="episodes-section">
-      <div class="section-heading">
+      <div class="section-heading episodes-heading">
         <div>
           <span id="details-list-kicker" class="eyebrow">WATCH</span>
           <h2 id="details-list-title">Episodes</h2>
@@ -215,7 +220,6 @@
 
     <div class="share-options">
 
-      <!-- FACEBOOK -->
       <button type="button" onclick="shareTo('facebook')"
         aria-label="Share on Facebook" title="Facebook">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -224,7 +228,6 @@
         </svg>
       </button>
 
-      <!-- MESSENGER -->
       <button type="button" onclick="shareTo('messenger')"
         aria-label="Share on Messenger" title="Messenger">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -233,7 +236,6 @@
         </svg>
       </button>
 
-      <!-- WHATSAPP -->
       <button type="button" onclick="shareTo('whatsapp')"
         aria-label="Share on WhatsApp" title="WhatsApp">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -242,7 +244,6 @@
         </svg>
       </button>
 
-      <!-- TELEGRAM -->
       <button type="button" onclick="shareTo('telegram')"
         aria-label="Share on Telegram" title="Telegram">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -251,7 +252,6 @@
         </svg>
       </button>
 
-      <!-- X -->
       <button type="button" onclick="shareTo('x')"
         aria-label="Share on X" title="X">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -260,7 +260,6 @@
         </svg>
       </button>
 
-      <!-- TIKTOK -->
       <button type="button" onclick="shareTo('tiktok')"
         aria-label="Share on TikTok" title="TikTok">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -269,7 +268,6 @@
         </svg>
       </button>
 
-      <!-- COPY LINK -->
       <button type="button" onclick="shareTo('copy')"
         aria-label="Copy link" title="Copy Link">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -288,7 +286,12 @@
 
 <footer class="footer">
   <a class="logo footer-logo" href="./" onclick="return goHome(event)">
-    MOVIE<span>FLIXHD</span>
+    <span class="logo-play" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M8 5.8v12.4L18 12 8 5.8Z" fill="currentColor"/>
+      </svg>
+    </span>
+    <span class="logo-text">MOVIE<span>FLIXHD</span></span>
   </a>
   <p>Discover movies and series.</p>
   <small>© <span id="year"></span> MovieFlixHD</small>
