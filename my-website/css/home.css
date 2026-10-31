@@ -1,3 +1,4 @@
+
 /* MOVIEFLIXHD — DARK RED THEME + SERIES + SEARCH + SHARE */
 
 :root {
@@ -203,6 +204,9 @@ body:has(#search-section:not([hidden])) .banner{display:none}
   -webkit-line-clamp:3;
   -webkit-box-orient:vertical;
   overflow:hidden;
+  text-align:justify;
+  text-justify:inter-word;
+  hyphens:auto;
   text-shadow:0 2px 10px rgba(0,0,0,.55)
 }
 .banner-play{
@@ -401,7 +405,10 @@ body:has(#search-section:not([hidden])) .banner{display:none}
   max-width:780px;
   color:#c5c6cd;
   font-size:14px;
-  line-height:1.8
+  line-height:1.8;
+  text-align:justify;
+  text-justify:inter-word;
+  hyphens:auto
 }
 .series-actions{
   display:flex;
@@ -494,11 +501,14 @@ body:has(#search-section:not([hidden])) .banner{display:none}
 .episode-card p{
   color:#9fa1aa;
   font-size:11px;
-  line-height:1.55;
+  line-height:1.6;
   display:-webkit-box;
   -webkit-line-clamp:3;
   -webkit-box-orient:vertical;
-  overflow:hidden
+  overflow:hidden;
+  text-align:justify;
+  text-justify:inter-word;
+  hyphens:auto
 }
 .episode-runtime{
   display:block;
@@ -737,9 +747,16 @@ body:has(#search-section:not([hidden])) .banner{display:none}
   padding:12px;
   color:#d0d0d5;
   font-size:14px;
-  line-height:1.7
+  line-height:1.8;
+  text-align:justify;
+  text-justify:inter-word;
+  hyphens:auto
 }
-.info-text h2,.info-text h3{color:var(--red-light);margin-bottom:10px}
+.info-text h2,.info-text h3{
+  color:var(--red-light);
+  margin-bottom:10px;
+  text-align:left
+}
 
 /* SHARE POPUP */
 
@@ -892,7 +909,13 @@ button:focus-visible,input:focus-visible,select:focus-visible{
     padding:13px
   }
   .series-summary h1{font-size:23px}
-  .series-summary>p{font-size:12px;line-height:1.6}
+  .series-summary>p{
+    font-size:12px;
+    line-height:1.7;
+    text-align:justify;
+    text-justify:inter-word;
+    hyphens:auto
+  }
   .series-meta{font-size:10px;gap:7px 10px}
   .series-actions{margin-top:13px}
   .series-primary-btn,.series-secondary-btn{
@@ -901,7 +924,6 @@ button:focus-visible,input:focus-visible,select:focus-visible{
   }
   .episodes-list{grid-template-columns:1fr}
   .episode-card{grid-template-columns:125px minmax(0,1fr)}
-  .episodes-heading h2{font-size:21px}
 }
 @media(max-width:600px){
   .navbar{padding:11px 13px}
@@ -927,7 +949,13 @@ button:focus-visible,input:focus-visible,select:focus-visible{
   .banner-label{font-size:9px;margin-bottom:12px}
   .banner-content h1{font-size:29px}
   .banner-meta{gap:9px;font-size:11px;margin-bottom:13px}
-  .banner-content p{font-size:12px;line-height:1.65}
+  .banner-content p{
+    font-size:12px;
+    line-height:1.7;
+    text-align:justify;
+    text-justify:inter-word;
+    hyphens:auto
+  }
   .banner-play{padding:11px 20px;font-size:12px;margin-top:19px}
 
   .row{margin:23px auto;padding:0 13px}
@@ -959,7 +987,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{
   .server-btn{flex:1;padding:9px 10px;font-size:11px}
   .next-server-btn{padding:9px 12px;font-size:11px}
   .info-wrapper{margin-top:10px;padding:8px}
-  .info-text{padding:8px;font-size:13px}
+  .info-text{padding:8px;font-size:13px;line-height:1.75}
   .footer{margin-top:35px;padding:22px 12px}
 
   .series-topbar{margin-bottom:14px}
@@ -972,7 +1000,14 @@ button:focus-visible,input:focus-visible,select:focus-visible{
     padding:8px
   }
   .episode-card h3{font-size:12px}
-  .episode-card p{font-size:10px;-webkit-line-clamp:2}
+  .episode-card p{
+    font-size:10px;
+    line-height:1.6;
+    -webkit-line-clamp:2;
+    text-align:justify;
+    text-justify:inter-word;
+    hyphens:auto
+  }
   .episode-navigation{flex-wrap:wrap}
   .episode-navigation span{order:-1;width:100%}
 
