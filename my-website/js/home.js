@@ -1,17 +1,17 @@
+
 (() => {
   "use strict";
 
-  // ==============================
+  // ==========================================
   // CONFIGURATION
-  // ==============================
+  // ==========================================
 
   const TMDB_KEY = atob("MWJkMjhkZWU5NTMzYTBiMWVkMjkyNTQ5ZDgyNmY4OGI=");
   const API = "https://api.themoviedb.org/3";
   const IMG = "https://image.tmdb.org/t/p/w500";
   const BACKDROP = "https://image.tmdb.org/t/p/original";
 
-  const AD_URL =
-    "https://directyp.org/4/02b9737bd4da1e3a14a820f0ce61a20d";
+  const AD_URL = "https://directyp.org/4/02b9737bd4da1e3a14a820f0ce61a20d";
 
   const SOURCES = [
     {
@@ -34,9 +34,9 @@
     }
   ];
 
-  // ==============================
+  // ==========================================
   // STATE
-  // ==============================
+  // ==========================================
 
   let currentItem = null;
   let currentMovie = null;
@@ -53,9 +53,9 @@
   let searchTimer = null;
   let searchRequest = 0;
 
-  // ==============================
+  // ==========================================
   // ELEMENT HELPERS
-  // ==============================
+  // ==========================================
 
   const $ = id => document.getElementById(id);
 
@@ -69,9 +69,9 @@
     searchList: $("search-results-list")
   };
 
-  // ==============================
+  // ==========================================
   // GENERAL HELPERS
-  // ==============================
+  // ==========================================
 
   function escapeHTML(value = "") {
     return String(value).replace(/[&<>"']/g, char => ({
@@ -117,6 +117,7 @@
 
   function makeUrl(path, params = {}) {
     const url = new URL(API + path);
+
     url.searchParams.set("api_key", TMDB_KEY);
     url.searchParams.set("language", "en-US");
 
@@ -152,9 +153,9 @@
     if (element) element.hidden = true;
   }
 
-  // ==============================
+  // ==========================================
   // MOVIE / SERIES CARDS
-  // ==============================
+  // ==========================================
 
   function createCard(item) {
     const type = getType(item);
@@ -170,11 +171,20 @@
           alt="${escapeHTML(getTitle(item))}"
           loading="lazy"
         >
-        <span class="rating">★ ${escapeHTML(getRating(item))}</span>
+        <span class="movie-card-rating">
+          ★ ${escapeHTML(getRating(item))}
+        </span>
       </div>
-      <div class="card-info">
-        <h3>${escapeHTML(getTitle(item))}</h3>
-        <p>${escapeHTML(getYear(item))} · ${type === "tv" ? "Series" : "Movie"}</p>
+
+      <div class="movie-card-info">
+        <h3 class="movie-card-title">
+          ${escapeHTML(getTitle(item))}
+        </h3>
+
+        <p class="movie-card-meta">
+          ${escapeHTML(getYear(item))} ·
+          ${type === "tv" ? "Series" : "Movie"}
+        </p>
       </div>
     `;
 
@@ -187,6 +197,7 @@
     };
 
     card.addEventListener("click", open);
+
     card.addEventListener("keydown", event => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
@@ -208,15 +219,17 @@
     });
   }
 
-  // ==============================
+  // ==========================================
   // HOME PAGE
-  // ==============================
+  // ==========================================
 
   async function loadHome() {
     try {
       const [movies, series, anime] = await Promise.all([
         api("/trending/movie/week"),
+
         api("/trending/tv/week"),
+
         api("/discover/tv", {
           with_genres: 16,
           with_original_language: "ja",
@@ -247,21 +260,25 @@
         bannerItem = featured;
 
         const background = $("banner-bg");
+
         if (background) {
           background.style.backgroundImage =
             `url("${getBackdrop(featured)}")`;
         }
 
         setText("banner-title", getTitle(featured));
+
         setText(
           "banner-meta",
           `${getYear(featured)} · ★ ${getRating(featured)}`
         );
+
         setText(
           "banner-overview",
           featured.overview || "Discover this featured movie."
         );
       }
+
     } catch (error) {
       console.error("Home loading error:", error);
     }
@@ -271,7 +288,9 @@
 
   if (bannerPlay) {
     bannerPlay.addEventListener("click", () => {
-      if (bannerItem) openMovie(bannerItem.id);
+      if (bannerItem) {
+        openMovie(bannerItem.id);
+      }
     });
   }
 
@@ -288,9 +307,9 @@
     });
   }
 
-  // ==============================
+  // ==========================================
   // DIRECT LINKS
-  // ==============================
+  // ==========================================
 
   function updateAddress(type, id, season) {
     const url = new URL(window.location.href);
@@ -299,10 +318,11 @@
 
     if (type === "movie") {
       url.searchParams.set("movie", id);
+
     } else if (type === "tv") {
       url.searchParams.set("tv", id);
 
-      if (season) {
+      if (season !== undefined && season !== null) {
         url.searchParams.set("season", season);
       }
     }
@@ -312,13 +332,15 @@
 
   function clearAddress() {
     const url = new URL(window.location.href);
+
     url.search = "";
+
     history.pushState({}, "", url);
   }
 
-  // ==============================
+  // ==========================================
   // DETAILS PAGE
-  // ==============================
+  // ==========================================
 
   async function openMovie(id, updateURL = true) {
     try {
@@ -326,6 +348,7 @@
 
       currentMovie = movie;
       currentSeries = null;
+
       currentItem = {
         ...movie,
         media_type: "movie"
@@ -342,10 +365,12 @@
 
       setText("details-kicker", "MOVIE");
       setText("series-title", getTitle(movie));
+
       setText(
         "series-meta",
         `${getYear(movie)} · ${movie.runtime || "N/A"} min · ★ ${getRating(movie)}`
       );
+
       setText(
         "series-overview",
         movie.overview || "No description available."
@@ -364,7 +389,7 @@
       const primaryButton = $("details-primary-btn");
 
       if (primaryButton) {
-        primaryButton.textContent = "▶ PLAY MOVIE";
+        primaryButton.textContent = "▶ WATCH MOVIE";
         primaryButton.onclick = () => openMoviePlayer(movie);
       }
 
@@ -379,7 +404,10 @@
 
       hide($("season-control"));
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
 
     } catch (error) {
       console.error("Movie details error:", error);
@@ -387,12 +415,17 @@
     }
   }
 
-  async function openSeries(id, updateURL = true, requestedSeason = null) {
+  async function openSeries(
+    id,
+    updateURL = true,
+    requestedSeason = null
+  ) {
     try {
       const series = await api(`/tv/${id}`);
 
       currentSeries = series;
       currentMovie = null;
+
       currentItem = {
         ...series,
         media_type: "tv"
@@ -410,10 +443,12 @@
 
       setText("details-kicker", "TV SERIES");
       setText("series-title", getTitle(series));
+
       setText(
         "series-meta",
         `${getYear(series)} · ${series.number_of_seasons || 0} Seasons · ★ ${getRating(series)}`
       );
+
       setText(
         "series-overview",
         series.overview || "No description available."
@@ -429,7 +464,8 @@
       const primaryButton = $("details-primary-btn");
 
       if (primaryButton) {
-        primaryButton.textContent = "▶ PLAY SERIES";
+        primaryButton.textContent = "▶ WATCH SERIES";
+
         primaryButton.onclick = () => {
           if (episodes.length) {
             openEpisode(0);
@@ -439,17 +475,20 @@
 
       const seasonSelect = $("season-select");
 
+      const availableSeasons = (series.seasons || [])
+        .filter(season => season.season_number >= 0);
+
       if (seasonSelect) {
         seasonSelect.replaceChildren();
 
-        (series.seasons || [])
-          .filter(season => season.season_number >= 0)
-          .forEach(season => {
-            const option = document.createElement("option");
-            option.value = season.season_number;
-            option.textContent = season.name;
-            seasonSelect.appendChild(option);
-          });
+        availableSeasons.forEach(season => {
+          const option = document.createElement("option");
+
+          option.value = season.season_number;
+          option.textContent = season.name;
+
+          seasonSelect.appendChild(option);
+        });
 
         seasonSelect.onchange = () => {
           loadSeason(
@@ -460,12 +499,14 @@
         };
       }
 
-      const availableSeasons = (series.seasons || [])
-        .filter(season => season.season_number >= 0);
+      const firstRegularSeason = availableSeasons.find(
+        season => season.season_number > 0
+      );
 
       currentSeason = requestedSeason !== null
         ? Number(requestedSeason)
-        : (availableSeasons[0]?.season_number ?? 1);
+        : (firstRegularSeason?.season_number ??
+          availableSeasons[0]?.season_number ?? 1);
 
       if (seasonSelect) {
         seasonSelect.value = String(currentSeason);
@@ -473,7 +514,10 @@
 
       await loadSeason(series.id, currentSeason, false);
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
 
     } catch (error) {
       console.error("Series details error:", error);
@@ -486,15 +530,20 @@
     hide(elements.searchResults);
     show(elements.details);
 
-    const input = elements.searchInput;
-    if (input) input.value = "";
+    if (elements.searchInput) {
+      elements.searchInput.value = "";
+    }
   }
 
-  // ==============================
+  // ==========================================
   // SEASONS AND EPISODES
-  // ==============================
+  // ==========================================
 
-  async function loadSeason(seriesId, seasonNumber, updateURL = true) {
+  async function loadSeason(
+    seriesId,
+    seasonNumber,
+    updateURL = true
+  ) {
     try {
       const data = await api(
         `/tv/${seriesId}/season/${seasonNumber}`
@@ -521,6 +570,7 @@
 
     } catch (error) {
       console.error("Season loading error:", error);
+
       episodes = [];
       renderEpisodes();
     }
@@ -528,6 +578,7 @@
 
   function renderEpisodes() {
     const container = $("episodes-list");
+
     if (!container) return;
 
     container.replaceChildren();
@@ -539,6 +590,7 @@
 
     episodes.forEach((episode, index) => {
       const card = document.createElement("article");
+
       card.className = "episode-card";
       card.tabIndex = 0;
 
@@ -552,15 +604,22 @@
           alt="${escapeHTML(episode.name || "Episode")}"
           loading="lazy"
         >
+
         <div class="episode-info">
           <h3>
             ${index + 1}. ${escapeHTML(episode.name || "Episode")}
           </h3>
-          <p>
+
+          <p class="episode-runtime">
             Episode ${episode.episode_number}
             ${episode.runtime ? ` · ${episode.runtime} min` : ""}
           </p>
-          <p>${escapeHTML(episode.overview || "No description available.")}</p>
+
+          <p>
+            ${escapeHTML(
+              episode.overview || "No description available."
+            )}
+          </p>
         </div>
       `;
 
@@ -579,9 +638,9 @@
     });
   }
 
-  // ==============================
+  // ==========================================
   // VIDEO PLAYER
-  // ==============================
+  // ==========================================
 
   function openMoviePlayer(movie) {
     currentItem = {
@@ -594,7 +653,8 @@
 
     openPlayer(
       getTitle(movie),
-      `${getYear(movie)} · Movie`
+      `${getYear(movie)} · Movie`,
+      movie.overview || "No description available."
     );
   }
 
@@ -615,17 +675,19 @@
 
     openPlayer(
       `${getTitle(currentSeries)} - ${episode.name}`,
-      `Season ${currentSeason} · Episode ${episode.episode_number}`
+      `Season ${currentSeason} · Episode ${episode.episode_number}`,
+      episode.overview || "No episode description available."
     );
 
     show($("episode-navigation"));
+
     updateEpisodeNavigation();
   }
 
-  function openPlayer(title, subtitle) {
+  function openPlayer(title, subtitle, description = "") {
     setText("player-title", title);
     setText("player-subtitle", subtitle);
-    setText("player-info", "Choose a server to start watching.");
+    setText("player-info", description);
 
     const video = $("video-container");
 
@@ -633,26 +695,43 @@
       video.innerHTML = `
         <div class="play-now-message">
           <h2>READY TO WATCH?</h2>
-          <p>Click below to load the video player.</p>
+
+          <p>Press WATCH NOW to start watching.</p>
+
           <button class="play-now-btn" id="unlock-player">
-            ▶ PLAY NOW
+            ▶ WATCH NOW
           </button>
         </div>
       `;
 
       const button = $("unlock-player");
 
-      button.addEventListener("click", unlockPlayer);
+      if (button) {
+        button.addEventListener("click", unlockPlayer);
+      }
     }
 
-    document.querySelectorAll(".server-btn").forEach((button, index) => {
-      button.classList.toggle("active", index === currentServer);
-    });
+    document.querySelectorAll(".server-btn").forEach(
+      (button, index) => {
+        button.classList.toggle(
+          "active",
+          index === currentServer
+        );
+      }
+    );
 
-    setText("server-name", SOURCES[currentServer].name);
+    setText(
+      "server-name",
+      SOURCES[currentServer].name
+    );
+
+    // Make all three server buttons visible.
+    show(document.querySelector(".player-controls"));
 
     hide($("episode-navigation"));
+
     show(elements.modal);
+
     document.body.style.overflow = "hidden";
   }
 
@@ -661,12 +740,12 @@
 
     playerUnlocked = true;
 
-    // Opens the configured advertising destination.
-    const adWindow = window.open(AD_URL, "_blank", "noopener");
-
-    if (!adWindow) {
-      console.warn("The browser blocked the advertising tab.");
-    }
+    // Open the configured advertising destination.
+    window.open(
+      AD_URL,
+      "_blank",
+      "noopener,noreferrer"
+    );
 
     loadVideo();
   }
@@ -693,6 +772,7 @@
 
   function loadVideo() {
     const video = $("video-container");
+
     if (!video) return;
 
     const src = getVideoUrl();
@@ -712,8 +792,17 @@
       ></iframe>
     `;
 
-    setText("server-name", SOURCES[currentServer].name);
-    setText("player-info", "If the video does not load, try another server.");
+    setText(
+      "server-name",
+      SOURCES[currentServer].name
+    );
+
+    setText(
+      "player-info",
+      currentItem.media_type === "tv"
+        ? (episodes[episodeIndex]?.overview || "Now playing.")
+        : (currentMovie?.overview || currentItem.overview || "Now playing.")
+    );
   }
 
   function selectServer(index) {
@@ -721,11 +810,16 @@
 
     currentServer = index;
 
-    document.querySelectorAll(".server-btn").forEach((button, i) => {
-      button.classList.toggle("active", i === index);
-    });
+    document.querySelectorAll(".server-btn").forEach(
+      (button, i) => {
+        button.classList.toggle("active", i === index);
+      }
+    );
 
-    setText("server-name", SOURCES[index].name);
+    setText(
+      "server-name",
+      SOURCES[index].name
+    );
 
     if (playerUnlocked) {
       loadVideo();
@@ -741,8 +835,13 @@
     const previous = $("prev-episode-btn");
     const next = $("next-episode-btn");
 
-    if (previous) previous.disabled = episodeIndex <= 0;
-    if (next) next.disabled = episodeIndex >= episodes.length - 1;
+    if (previous) {
+      previous.disabled = episodeIndex <= 0;
+    }
+
+    if (next) {
+      next.disabled = episodeIndex >= episodes.length - 1;
+    }
   }
 
   function navigateEpisode(direction) {
@@ -759,27 +858,24 @@
     hide(elements.modal);
 
     const video = $("video-container");
-    if (video) video.replaceChildren();
+
+    if (video) {
+      video.replaceChildren();
+    }
 
     document.body.style.overflow = "";
     playerUnlocked = false;
   }
 
-  // ==============================
+  // ==========================================
   // PLAYER BUTTON EVENTS
-  // ==============================
+  // ==========================================
 
   document.querySelectorAll(".server-btn").forEach(button => {
     button.addEventListener("click", () => {
       selectServer(Number(button.dataset.server));
     });
   });
-
-  const closePlayerButton = document.querySelector(".modal-close");
-
-  if (closePlayerButton) {
-    closePlayerButton.addEventListener("click", closeModal);
-  }
 
   if (elements.modal) {
     elements.modal.addEventListener("click", event => {
@@ -789,24 +885,9 @@
     });
   }
 
-  const previousButton = $("prev-episode-btn");
-  const nextButton = $("next-episode-btn");
-
-  if (previousButton) {
-    previousButton.addEventListener("click", () => {
-      navigateEpisode(-1);
-    });
-  }
-
-  if (nextButton) {
-    nextButton.addEventListener("click", () => {
-      navigateEpisode(1);
-    });
-  }
-
-  // ==============================
+  // ==========================================
   // SEARCH
-  // ==============================
+  // ==========================================
 
   async function searchMovies(query) {
     const requestId = ++searchRequest;
@@ -822,9 +903,11 @@
     hide(elements.details);
 
     const list = elements.searchList;
+
     if (!list) return;
 
-    list.innerHTML = "<p class='search-message'>Searching...</p>";
+    list.innerHTML =
+      "<p class='search-message'>Searching...</p>";
 
     try {
       const data = await api("/search/multi", {
@@ -841,7 +924,9 @@
       list.replaceChildren();
 
       if (!results.length) {
-        list.innerHTML = "<p class='search-message'>No results found.</p>";
+        list.innerHTML =
+          "<p class='search-message'>No results found.</p>";
+
         return;
       }
 
@@ -851,7 +936,9 @@
 
     } catch (error) {
       console.error("Search error:", error);
-      list.innerHTML = "<p class='search-message'>Search failed. Please try again.</p>";
+
+      list.innerHTML =
+        "<p class='search-message'>Search failed. Please try again.</p>";
     }
   }
 
@@ -871,42 +958,54 @@
 
   if (searchButton) {
     searchButton.addEventListener("click", () => {
-      searchMovies(elements.searchInput.value.trim());
+      searchMovies(
+        elements.searchInput?.value.trim() || ""
+      );
     });
   }
 
-  // ==============================
+  // ==========================================
   // SHARE POPUP
-  // ==============================
+  // ==========================================
 
   function openSharePopup() {
     const title = currentItem
       ? getTitle(currentItem)
       : "MovieFlixHD";
 
-    setText("share-modal-title", `Share ${title}`);
+    setText(
+      "share-modal-title",
+      `Share ${title}`
+    );
+
     setText(
       "share-modal-description",
       "Share this movie or series with your friends."
     );
 
     show(elements.shareModal);
+
     document.body.style.overflow = "hidden";
   }
 
   function closeSharePopup() {
     hide(elements.shareModal);
+
     document.body.style.overflow = "";
   }
 
   function getShareLink() {
-    if (!currentItem) return window.location.href;
+    if (!currentItem) {
+      return window.location.href;
+    }
 
     const url = new URL(window.location.href);
+
     url.search = "";
 
     if (currentItem.media_type === "tv") {
       url.searchParams.set("tv", currentItem.id);
+      url.searchParams.set("season", currentSeason);
     } else {
       url.searchParams.set("movie", currentItem.id);
     }
@@ -916,55 +1015,78 @@
 
   async function shareTo(platform) {
     const link = getShareLink();
-    const title = currentItem ? getTitle(currentItem) : "MovieFlixHD";
+
+    const title = currentItem
+      ? getTitle(currentItem)
+      : "MovieFlixHD";
+
     const encodedLink = encodeURIComponent(link);
     const encodedTitle = encodeURIComponent(title);
 
     const shareUrls = {
-      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}`,
-      messenger: `https://www.facebook.com/dialog/send?link=${encodedLink}&app_id=`,
-      whatsapp: `https://wa.me/?text=${encodedTitle}%20${encodedLink}`,
-      telegram: `https://t.me/share/url?url=${encodedLink}&text=${encodedTitle}`,
-      x: `https://twitter.com/intent/tweet?url=${encodedLink}&text=${encodedTitle}`
+      facebook:
+        `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}`,
+
+      messenger:
+        `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}`,
+
+      whatsapp:
+        `https://wa.me/?text=${encodedTitle}%20${encodedLink}`,
+
+      telegram:
+        `https://t.me/share/url?url=${encodedLink}&text=${encodedTitle}`,
+
+      x:
+        `https://twitter.com/intent/tweet?url=${encodedLink}&text=${encodedTitle}`
     };
 
     if (platform === "copy") {
       try {
         await navigator.clipboard.writeText(link);
-        setText("share-popup-feedback", "Link copied!");
+
+        setText(
+          "share-popup-feedback",
+          "Link copied!"
+        );
+
       } catch (error) {
         setText(
           "share-popup-feedback",
           "Unable to copy automatically. Please copy the page link."
         );
       }
+
       return;
     }
 
     if (platform === "tiktok") {
       try {
         await navigator.clipboard.writeText(link);
+
         setText(
           "share-popup-feedback",
           "Link copied! You can paste it into TikTok."
         );
+
       } catch (error) {
-        setText("share-popup-feedback", "Please copy the page link manually.");
+        setText(
+          "share-popup-feedback",
+          "Please copy the page link manually."
+        );
       }
+
       return;
     }
 
     const destination = shareUrls[platform];
 
     if (destination) {
-      window.open(destination, "_blank", "noopener,noreferrer");
+      window.open(
+        destination,
+        "_blank",
+        "noopener,noreferrer"
+      );
     }
-  }
-
-  const shareButton = $("details-share-btn");
-
-  if (shareButton) {
-    shareButton.addEventListener("click", openSharePopup);
   }
 
   if (elements.shareModal) {
@@ -975,34 +1097,41 @@
     });
   }
 
-  // ==============================
+  // ==========================================
   // HOME / BACK BUTTON
-  // ==============================
+  // ==========================================
 
-  function goHome() {
+  function goHome(event) {
+    if (event) event.preventDefault();
+
     currentItem = null;
     currentMovie = null;
     currentSeries = null;
+
     episodes = [];
+    episodeIndex = 0;
 
     hide(elements.details);
     hide(elements.searchResults);
     show(elements.home);
 
+    if (elements.searchInput) {
+      elements.searchInput.value = "";
+    }
+
     clearAddress();
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+    return false;
   }
 
-  const backButton = document.querySelector(".back-btn");
-
-  if (backButton) {
-    backButton.addEventListener("click", goHome);
-  }
-
-  // ==============================
+  // ==========================================
   // KEYBOARD SHORTCUTS
-  // ==============================
+  // ==========================================
 
   document.addEventListener("keydown", event => {
     if (event.key === "Escape") {
@@ -1011,12 +1140,14 @@
     }
   });
 
-  // ==============================
+  // ==========================================
   // DIRECT LINK ROUTING
-  // ==============================
+  // ==========================================
 
   async function handleDirectLink() {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(
+      window.location.search
+    );
 
     const movieId = params.get("movie");
     const tvId = params.get("tv");
@@ -1024,6 +1155,7 @@
 
     if (movieId) {
       await openMovie(movieId, false);
+
     } else if (tvId) {
       await openSeries(
         tvId,
@@ -1035,19 +1167,21 @@
 
   window.addEventListener("popstate", handleDirectLink);
 
-  // ==============================
+  // ==========================================
   // GLOBAL FUNCTIONS FOR HTML
-  // ==============================
+  // ==========================================
 
+  window.goHome = goHome;
   window.selectServer = selectServer;
+  window.navigateEpisode = navigateEpisode;
   window.shareTo = shareTo;
   window.closeModal = closeModal;
   window.openSharePopup = openSharePopup;
   window.closeSharePopup = closeSharePopup;
 
-  // ==============================
+  // ==========================================
   // START WEBSITE
-  // ==============================
+  // ==========================================
 
   loadHome();
   handleDirectLink();
