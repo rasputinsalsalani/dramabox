@@ -1045,3 +1045,52 @@ button:focus-visible,input:focus-visible,select:focus-visible{
     animation-duration:.01ms!important
   }
 }
+
+/* MOVIE SUGGESTIONS */
+
+#series-page .episodes-section {
+  margin-top: 30px;
+}
+
+#series-page #episodes-list .movie-card {
+  cursor: pointer;
+  min-width: 0;
+}
+
+#series-page #episodes-list .movie-card:hover {
+  transform: translateY(-5px);
+}
+
+#series-page #episodes-list .movie-card img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+}
+
+#series-page #episodes-list .movie-card-info {
+  padding: 10px;
+}
+
+#series-page #episodes-list .movie-card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+#series-page #episodes-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  gap: 16px;
+}
+
+#series-page #episodes-list .episode-status {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 600px) {
+  #series-page #episodes-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
