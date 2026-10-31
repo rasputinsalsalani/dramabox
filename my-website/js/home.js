@@ -182,8 +182,7 @@
         </h3>
 
         <p class="movie-card-meta">
-          ${escapeHTML(getYear(item))} ·
-          ${type === "tv" ? "Series" : "Movie"}
+          ${escapeHTML(getYear(item))}
         </p>
       </div>
     `;
@@ -353,6 +352,11 @@
         ...movie,
         media_type: "movie"
       };
+
+      // Clear old series and episode information.
+      episodes = [];
+      episodeIndex = 0;
+      currentSeason = 1;
 
       if (updateURL) {
         updateAddress("movie", id);
@@ -642,7 +646,30 @@
   // VIDEO PLAYER
   // ==========================================
 
+  function clearEpisodeNavigation() {
+    // Hide the episode navigation for movies.
+    hide($("episode-navigation"));
+
+    // Clear any previous episode label.
+    setText("episode-nav-label", "");
+
+    // Disable previous and next buttons.
+    const previous = $("prev-episode-btn");
+    const next = $("next-episode-btn");
+
+    if (previous) previous.disabled = true;
+    if (next) next.disabled = true;
+  }
+
   function openMoviePlayer(movie) {
+    // Reset all old TV / anime playback data.
+    currentSeries = null;
+    currentMovie = movie;
+
+    episodes = [];
+    episodeIndex = 0;
+    currentSeason = 1;
+
     currentItem = {
       ...movie,
       media_type: "movie"
@@ -650,6 +677,9 @@
 
     currentServer = 0;
     playerUnlocked = false;
+
+    // Ensure episode controls are hidden before opening movie.
+    clearEpisodeNavigation();
 
     openPlayer(
       getTitle(movie),
@@ -679,6 +709,7 @@
       episode.overview || "No episode description available."
     );
 
+    // Show episode navigation only for TV / anime.
     show($("episode-navigation"));
 
     updateEpisodeNavigation();
@@ -725,9 +756,11 @@
       SOURCES[currentServer].name
     );
 
-    // Make all three server buttons visible.
+    // Show server controls.
     show(document.querySelector(".player-controls"));
 
+    // Always reset navigation first.
+    // openEpisode() will show it again for TV / anime.
     hide($("episode-navigation"));
 
     show(elements.modal);
@@ -845,6 +878,11 @@
   }
 
   function navigateEpisode(direction) {
+    // Prevent episode navigation when playing a movie.
+    if (!currentItem || currentItem.media_type !== "tv") {
+      return;
+    }
+
     const nextIndex = episodeIndex + direction;
 
     if (nextIndex < 0 || nextIndex >= episodes.length) {
@@ -862,6 +900,8 @@
     if (video) {
       video.replaceChildren();
     }
+
+    clearEpisodeNavigation();
 
     document.body.style.overflow = "";
     playerUnlocked = false;
@@ -1110,6 +1150,9 @@
 
     episodes = [];
     episodeIndex = 0;
+    currentSeason = 1;
+
+    clearEpisodeNavigation();
 
     hide(elements.details);
     hide(elements.searchResults);
