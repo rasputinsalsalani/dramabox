@@ -1,346 +1,431 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MovieFlixHD | DISCOVER. WATCH. ENJOY.</title>
-  <meta name="description" content="Discover movies, TV shows and anime with MovieFlixHD.">
-  <meta name="theme-color" content="#08090d">
+  <meta name="theme-color" content="#090909">
 
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="MovieFlixHD">
-  <meta property="og:title" content="MovieFlixHD | DISCOVER. WATCH. ENJOY.">
-  <meta property="og:description" content="Discover movies, TV shows and anime with MovieFlixHD.">
-  <meta property="og:image" content="https://dramabox-85g.pages.dev/og-image.png">
-  <meta property="og:image:secure_url" content="https://dramabox-85g.pages.dev/og-image.png">
-  <meta property="og:image:type" content="image/png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:url" content="https://dramabox-85g.pages.dev/">
+  <title>MovieFlixHD - Watch Movies, Series & Anime</title>
+  <meta name="description" content="Watch the latest movies, TV series and anime on MovieFlixHD.">
+  <meta name="robots" content="index, follow">
 
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="MovieFlixHD">
-  <meta name="twitter:description" content="Discover movies, TV shows and anime on MovieFlixHD.">
-  <meta name="twitter:image" content="https://dramabox-85g.pages.dev/og-image.png">
-
-  <link rel="preconnect" href="https://api.themoviedb.org">
-  <link rel="preconnect" href="https://image.tmdb.org">
+  <link rel="icon" href="logo.png">
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/home.css">
-  <script defer src="js/home.js"></script>
+
+  <meta property="og:title" content="MovieFlixHD">
+  <meta property="og:description" content="Watch Movies, Series and Anime">
+  <meta property="og:image" content="https://dramabox-85g.pages.dev/og-image.png">
+  <meta property="og:type" content="website">
 </head>
+
 <body>
 
-  <header class="navbar">
-    <div class="nav-inner">
-      <a class="brand" href="/" aria-label="MovieFlixHD home" onclick="return goHome(event)">
-        <span class="brand-icon">▶</span>
-        <span class="brand-name">MovieFlix<span>HD</span></span>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="logo" onclick="goHome(); return false;">
+        <img src="logo.png" alt="MovieFlixHD Logo">
+        <span>MovieFlix<span class="logo-red">HD</span></span>
       </a>
 
-      <div class="search-wrapper">
+      <div class="search-box" id="search-section">
         <input
-          id="search-input"
           type="search"
-          placeholder="Search movies, shows..."
+          id="search-input"
+          placeholder="Search movies, series, anime..."
           autocomplete="off"
-          aria-label="Search movies and TV shows"
-          oninput="searchTMDB(this.value)"
         >
+        <button id="search-btn" type="button" aria-label="Search">⌕</button>
       </div>
     </div>
   </header>
 
-  <!-- Search results appear directly below the navbar -->
-  <main id="search-section" class="row box red-glow search-page" hidden>
-    <h2>Search Results</h2>
-    <div class="grid" id="search-results"></div>
-  </main>
-
-  <!-- Featured banner -->
-  <section class="banner" id="banner">
-    <div class="banner-content">
-      <span class="banner-label">FEATURED MOVIE</span>
-      <h1 id="banner-title">Discover Movies</h1>
-      <div class="banner-meta" id="banner-meta">
-        <span>Discover trending entertainment</span>
-      </div>
-      <p id="banner-desc">
-        Explore trending movies, TV shows and anime on MovieFlixHD.
-      </p>
-      <button type="button" class="banner-play" onclick="openFromBanner()">
-        ▶ Watch Now
-      </button>
+  <!-- SEARCH RESULTS -->
+  <section id="search-results" class="search-results" hidden>
+    <div class="section-heading">
+      <h2>SEARCH RESULTS</h2>
+      <button type="button" onclick="clearSearch()">✕ Close</button>
     </div>
+    <div id="search-results-list" class="movie-grid"></div>
   </section>
 
-  <!-- Homepage content -->
+  <!-- HOME CONTENT -->
   <main id="home-content">
-    <section class="row box red-glow">
-      <h2>Trending Movies</h2>
-      <div class="grid-2" id="movies-list"></div>
+
+    <!-- FEATURED BANNER -->
+    <section class="banner" id="banner">
+      <div class="banner-bg" id="banner-bg"></div>
+      <div class="banner-overlay"></div>
+
+      <div class="banner-content">
+        <span class="banner-label">FEATURED</span>
+        <h1 id="banner-title">Welcome to MovieFlixHD</h1>
+        <p id="banner-overview">
+          Watch your favorite movies, series and anime.
+        </p>
+        <button id="banner-play" type="button">
+          ▶ WATCH NOW
+        </button>
+      </div>
     </section>
 
-    <section class="row box red-glow">
-      <h2>Popular TV Shows</h2>
-      <div class="grid-2" id="tvshows-list"></div>
+    <!-- TRENDING MOVIES -->
+    <section class="content-section">
+      <div class="section-heading">
+        <h2>TRENDING MOVIES</h2>
+      </div>
+      <div id="trending-movies" class="movie-grid"></div>
     </section>
 
-    <section class="row box red-glow">
-      <h2>Trending Anime</h2>
-      <div class="grid-2" id="anime-list"></div>
+    <!-- POPULAR SERIES -->
+    <section class="content-section">
+      <div class="section-heading">
+        <h2>POPULAR SERIES</h2>
+      </div>
+      <div id="popular-series" class="movie-grid"></div>
     </section>
+
+    <!-- ANIME -->
+    <section class="content-section">
+      <div class="section-heading">
+        <h2>POPULAR ANIME</h2>
+      </div>
+      <div id="popular-anime" class="movie-grid"></div>
+    </section>
+
   </main>
 
-  <!-- Separate TV / anime details page -->
+  <!-- MOVIE / SERIES DETAILS PAGE -->
   <main id="series-page" class="series-page" hidden>
+
+    <!-- DETAILS TOP BAR -->
     <div class="series-topbar">
-      <button class="back-btn" type="button" onclick="goHome()">
-        ← Back to Home
+      <button type="button" class="back-btn" onclick="goHome()">
+        ← BACK
       </button>
 
-      <button class="share-btn" type="button" onclick="shareSeries()">
-        ↗ Share Series
+      <button
+        type="button"
+        class="share-series-btn"
+        id="details-share-btn"
+        onclick="shareSeries()"
+      >
+        ↗ SHARE SERIES
       </button>
     </div>
 
+    <!-- DETAILS HERO -->
     <section class="series-hero">
+
       <div class="series-poster-wrap">
-        <img id="series-poster" src="" alt="Series poster">
+        <img
+          id="series-poster"
+          src=""
+          alt="Movie or Series Poster"
+        >
       </div>
 
       <div class="series-summary">
-        <span class="series-kicker">SERIES DETAILS</span>
-        <h1 id="series-title">Loading series...</h1>
-        <div class="series-meta" id="series-meta"></div>
 
-        <p id="series-overview">
-          Please wait while series information loads.
-        </p>
+        <span class="series-kicker" id="details-kicker">
+          SERIES DETAILS
+        </span>
+
+        <h1 id="series-title">Loading...</h1>
+
+        <div id="series-meta" class="series-meta"></div>
+
+        <p id="series-overview"></p>
 
         <div class="series-actions">
           <button
             type="button"
             class="series-primary-btn"
+            id="details-primary-btn"
             onclick="playFirstEpisode()"
           >
-            ▶ Play First Episode
+            ▶ PLAY FIRST EPISODE
           </button>
         </div>
 
-        <p class="share-feedback" id="share-feedback" aria-live="polite"></p>
+        <div id="share-feedback" class="share-feedback"></div>
+
       </div>
     </section>
 
-    <section class="episodes-section">
+    <!-- SERIES EPISODES -->
+    <section class="episodes-section" id="episodes-section">
+
       <div class="episodes-heading">
         <div>
           <span class="series-kicker">WATCH EPISODES</span>
-          <h2>Episodes</h2>
+          <h2>SEASONS & EPISODES</h2>
         </div>
 
-        <label class="season-control">
-          <span>Season</span>
-          <select
-            id="season-select"
-            aria-label="Choose season"
-            onchange="loadSeasonEpisodes(this.value)"
-          ></select>
-        </label>
+        <select id="season-select" aria-label="Select Season">
+          <option value="">Select Season</option>
+        </select>
       </div>
 
       <div id="episodes-list" class="episodes-list">
-        <p class="episode-status">Loading episodes...</p>
+        <p class="loading-text">Loading episodes...</p>
       </div>
+
     </section>
+
+    <!-- MOVIE RECOMMENDATIONS -->
+    <section
+      class="episodes-section"
+      id="movie-suggestions-section"
+      hidden
+    >
+
+      <div class="episodes-heading">
+        <div>
+          <span class="series-kicker">DISCOVER MORE</span>
+          <h2>YOU MAY ALSO LIKE</h2>
+        </div>
+      </div>
+
+      <div id="movie-suggestions-list" class="movie-grid"></div>
+
+    </section>
+
   </main>
 
-  <!-- Movie / episode player -->
-  <div
-    class="modal"
-    id="modal"
-    aria-label="Movie player"
-    aria-modal="true"
-    role="dialog"
-  >
-    <div class="modal-content">
-      <button
-        type="button"
-        class="close"
-        onclick="closeModal()"
-        aria-label="Close player"
-      >
-        ✕
-      </button>
+  <!-- PLAYER MODAL -->
+  <div id="modal" class="modal" hidden>
 
-      <div class="player-header">
-        <div class="player-heading">
-          <span class="player-tag">NOW PLAYING</span>
-          <h2 id="player-heading-title">MovieFlixHD Player</h2>
-          <p id="player-episode-label" class="player-episode-label"></p>
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h2 id="player-title">Now Playing</h2>
+          <p id="player-subtitle"></p>
         </div>
 
         <button
           type="button"
-          class="share-btn player-share-btn"
-          onclick="openSharePopup()"
+          class="modal-close"
+          onclick="closeModal()"
+          aria-label="Close player"
         >
-          ↗ Share
+          ✕
         </button>
       </div>
 
-      <div class="video-container">
-        <div class="player-message play-now-message">
-          <p>Click to start watching</p>
-          <button type="button" class="play-now-btn">▶ PLAY NOW</button>
+      <!-- PLAYER AREA -->
+      <div class="video-container" id="video-container">
+
+        <div id="player-loading" class="player-loading">
+          <div class="loader"></div>
+          <p>Preparing your video...</p>
         </div>
+
+        <div id="play-now-screen" class="play-now-screen" hidden>
+          <div class="play-now-content">
+            <h2>READY TO WATCH?</h2>
+            <p>Click below to continue to the video player.</p>
+            <button
+              type="button"
+              id="unlock-player-btn"
+              onclick="unlockPlayer()"
+            >
+              ▶ PLAY NOW
+            </button>
+          </div>
+        </div>
+
+        <iframe
+          id="video-player"
+          src=""
+          title="MovieFlixHD Video Player"
+          allowfullscreen
+          allow="autoplay; fullscreen; picture-in-picture"
+          referrerpolicy="origin"
+        ></iframe>
+
       </div>
 
-      <div class="player-controls" hidden>
-        <div class="server-info">
-          <span class="server-indicator"></span>
-          <span>Active: <strong id="server-name">Server 1</strong></span>
-        </div>
+      <!-- PLAYER CONTROLS -->
+      <div class="player-controls">
 
-        <div class="server-selector" role="group" aria-label="Choose video server">
+        <div class="server-controls">
+          <span>SERVER:</span>
+
           <button
             type="button"
             class="server-btn active"
-            data-server="0"
-            aria-pressed="true"
-            onclick="selectServer(0)"
-          >Server 1</button>
-
-          <button
-            type="button"
-            class="server-btn"
             data-server="1"
-            aria-pressed="false"
-            onclick="selectServer(1)"
-          >Server 2</button>
+            onclick="changeServer(1)"
+          >
+            SERVER 1
+          </button>
 
           <button
             type="button"
             class="server-btn"
             data-server="2"
-            aria-pressed="false"
-            onclick="selectServer(2)"
-          >Server 3</button>
+            onclick="changeServer(2)"
+          >
+            SERVER 2
+          </button>
+
+          <button
+            type="button"
+            class="server-btn"
+            data-server="3"
+            onclick="changeServer(3)"
+          >
+            SERVER 3
+          </button>
         </div>
 
-        <button
-          type="button"
-          class="next-server-btn"
-          onclick="nextServer()"
-        >
-          Next Server ↗
-        </button>
-      </div>
+        <div class="episode-navigation" id="episode-navigation" hidden>
+          <button
+            type="button"
+            id="prev-episode-btn"
+            onclick="navigateEpisode(-1)"
+          >
+            ◀ PREVIOUS
+          </button>
 
-      <div class="episode-navigation" id="episode-navigation" hidden>
-        <button
-          type="button"
-          id="previous-episode-btn"
-          onclick="navigateEpisode(-1)"
-        >
-          ← Previous Episode
-        </button>
-
-        <span id="episode-nav-label"></span>
-
-        <button
-          type="button"
-          id="next-episode-btn"
-          onclick="navigateEpisode(1)"
-        >
-          Next Episode →
-        </button>
-      </div>
-
-      <div class="info-wrapper">
-        <div class="info-text">
-          <h2 id="modal-title"></h2>
-          <p id="modal-description"></p>
+          <button
+            type="button"
+            id="next-episode-btn"
+            onclick="navigateEpisode(1)"
+          >
+            NEXT ▶
+          </button>
         </div>
+
       </div>
+
+      <div class="player-info" id="player-info">
+        <p class="info-text">
+          If one server does not work, please try another server.
+        </p>
+      </div>
+
     </div>
+
   </div>
 
-  <!-- Share popup for movies and series -->
-  <div
-    class="share-modal"
-    id="share-modal"
-    hidden
-    aria-modal="true"
-    role="dialog"
-    aria-labelledby="share-modal-title"
-  >
-    <div class="share-dialog">
-      <button
-        type="button"
-        class="share-close"
-        onclick="closeSharePopup()"
-        aria-label="Close share menu"
-      >
-        ✕
-      </button>
+  <!-- SHARE POPUP -->
+  <div id="share-modal" class="share-modal" hidden>
 
-      <h2 id="share-modal-title">Share this title</h2>
-      <p id="share-modal-description">
-        Share this movie with your friends.
-      </p>
+    <div class="share-modal-content">
+
+      <div class="share-modal-header">
+        <h3>SHARE</h3>
+
+        <button
+          type="button"
+          onclick="closeSharePopup()"
+          aria-label="Close share popup"
+        >
+          ✕
+        </button>
+      </div>
+
+      <p>Share this movie or series with your friends.</p>
 
       <div class="share-options">
-        <button type="button" class="share-option copy" onclick="shareTo('copy')">
-          <span class="share-icon">⧉</span>
-          <span>Copy Link</span>
+
+        <button
+          type="button"
+          class="share-option facebook"
+          onclick="shareTo('facebook')"
+        >
+          <span>f</span>
+          Facebook
         </button>
 
-        <button type="button" class="share-option facebook" onclick="shareTo('facebook')">
-          <span class="share-icon">f</span>
-          <span>Facebook</span>
+        <button
+          type="button"
+          class="share-option messenger"
+          onclick="shareTo('messenger')"
+        >
+          <span>✉</span>
+          Messenger
         </button>
 
-        <button type="button" class="share-option messenger" onclick="shareTo('messenger')">
-          <span class="share-icon">➤</span>
-          <span>Messenger</span>
+        <button
+          type="button"
+          class="share-option whatsapp"
+          onclick="shareTo('whatsapp')"
+        >
+          <span>◉</span>
+          WhatsApp
         </button>
 
-        <button type="button" class="share-option whatsapp" onclick="shareTo('whatsapp')">
-          <span class="share-icon">◉</span>
-          <span>WhatsApp</span>
+        <button
+          type="button"
+          class="share-option telegram"
+          onclick="shareTo('telegram')"
+        >
+          <span>➤</span>
+          Telegram
         </button>
 
-        <button type="button" class="share-option telegram" onclick="shareTo('telegram')">
-          <span class="share-icon">➤</span>
-          <span>Telegram</span>
+        <button
+          type="button"
+          class="share-option twitter"
+          onclick="shareTo('twitter')"
+        >
+          <span>𝕏</span>
+          X
         </button>
 
-        <button type="button" class="share-option x-social" onclick="shareTo('x')">
-          <span class="share-icon">𝕏</span>
-          <span>X</span>
+        <button
+          type="button"
+          class="share-option tiktok"
+          onclick="shareTo('tiktok')"
+        >
+          <span>♪</span>
+          TikTok
         </button>
 
-        <button type="button" class="share-option tiktok" onclick="shareTo('tiktok')">
-          <span class="share-icon">♪</span>
-          <span>TikTok</span>
-        </button>
       </div>
 
-      <p
-        class="share-popup-feedback"
-        id="share-popup-feedback"
-        aria-live="polite"
-      ></p>
+      <button
+        type="button"
+        class="copy-link-btn"
+        onclick="copyShareLink()"
+      >
+        <span>▣</span>
+        COPY LINK
+      </button>
+
     </div>
+
   </div>
 
+  <!-- FOOTER -->
   <footer class="footer">
-    <p>© <span id="current-year"></span> MovieFlixHD. All rights reserved.</p>
-    <p class="footer-note">Movie information and posters powered by TMDB.</p>
+    <div class="footer-inner">
+      <a href="/" class="footer-logo" onclick="goHome(); return false;">
+        MovieFlix<span>HD</span>
+      </a>
+
+      <p>
+        MovieFlixHD — Movies, Series and Anime.
+      </p>
+
+      <p class="copyright">
+        © <span id="current-year"></span> MovieFlixHD. All rights reserved.
+      </p>
+    </div>
   </footer>
 
+  <!-- JAVASCRIPT -->
+  <script src="js/home.js"></script>
+
   <script>
-    document.getElementById("current-year").textContent = new Date().getFullYear();
+    document.getElementById("current-year").textContent =
+      new Date().getFullYear();
   </script>
 
 </body>
