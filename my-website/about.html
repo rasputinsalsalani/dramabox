@@ -1,19 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b10">
+  <meta name="description" content="Learn about MovieFlixHD, an independent entertainment discovery platform featuring third-party movie and series sources.">
+  <meta name="color-scheme" content="dark">
 
   <title>About Us | MovieFlixHD</title>
-  <meta name="description" content="Learn about MovieFlixHD, an independent entertainment discovery platform that provides access to movie information and third-party embedded content.">
-  <meta name="robots" content="index, follow">
 
-  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="stylesheet" href="css/home.css">
 
   <style>
     .legal-page {
-      width: min(100% - 40px, 900px);
+      width: min(900px, calc(100% - 40px));
       margin: 50px auto 80px;
       color: #e8e8e8;
       line-height: 1.8;
@@ -21,8 +22,8 @@
 
     .legal-page h1 {
       color: #fff;
-      font-size: clamp(30px, 5vw, 44px);
-      margin-bottom: 10px;
+      font-size: clamp(30px, 5vw, 42px);
+      margin-bottom: 8px;
     }
 
     .legal-page .page-subtitle {
@@ -41,12 +42,12 @@
       margin-bottom: 15px;
     }
 
-    .legal-page a {
+    .legal-page a:not(.back-home) {
       color: #d8b66a;
       text-decoration: none;
     }
 
-    .legal-page a:hover {
+    .legal-page a:not(.back-home):hover {
       text-decoration: underline;
     }
 
@@ -56,8 +57,13 @@
       padding: 11px 20px;
       border-radius: 6px;
       background: #d8b66a;
-      color: #090a0d !important;
+      color: #090b10;
       font-weight: 700;
+      text-decoration: none;
+    }
+
+    .back-home:hover {
+      opacity: .9;
     }
 
     @media (max-width: 600px) {
@@ -71,113 +77,135 @@
 
 <body>
 
-  <header class="header">
-    <div class="header-container">
-      <a href="index.html" class="logo">MovieFlix<span>HD</span></a>
+<!-- HEADER: SAME AS HOMEPAGE -->
+<header class="header">
+  <div class="header-inner">
 
-      <nav class="nav">
-        <a href="index.html">Home</a>
-      </nav>
-    </div>
-  </header>
+    <a class="logo" href="./" aria-label="MovieFlixHD Home">
+      <span class="logo-play" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M8 5.8v12.4L18 12 8 5.8Z" fill="currentColor"/>
+        </svg>
+      </span>
 
-  <main class="legal-page">
+      <span class="logo-text">MOVIE<span>FLIXHD</span></span>
+    </a>
 
-    <h1>About MovieFlixHD</h1>
-    <p class="page-subtitle">Discover movies and series.</p>
+  </div>
+</header>
 
-    <p>
-      <strong>MovieFlixHD</strong> is an independent entertainment
-      discovery platform created to help visitors explore movies
-      and television series.
-    </p>
+<!-- ABOUT CONTENT -->
+<main class="legal-page">
 
-    <h2>Our Platform</h2>
+  <h1>About MovieFlixHD</h1>
 
-    <p>
-      MovieFlixHD provides information and access to entertainment
-      content through third-party sources and embedded media players.
-      Some videos, streams, images, posters, descriptions, and other
-      materials displayed on this website may be hosted, provided,
-      or made available by external third-party websites and services.
-    </p>
+  <p class="page-subtitle">
+    Discover movies and series.
+  </p>
 
-    <h2>Third-Party Content</h2>
+  <p>
+    <strong>MovieFlixHD</strong> is an independent entertainment
+    discovery platform created to help visitors explore movies
+    and television series.
+  </p>
 
-    <p>
-      We do not host, upload, produce, or claim ownership of
-      third-party movies, television episodes, videos, or other
-      copyrighted media displayed through embedded players or
-      external sources on our website.
-    </p>
+  <h2>Our Platform</h2>
 
-    <p>
-      Any embedded content remains the property of its respective
-      copyright owners, creators, distributors, or providers.
-      We do not control the availability, quality, accuracy, or
-      content of external third-party services.
-    </p>
+  <p>
+    MovieFlixHD provides information and access to entertainment
+    content through third-party sources and embedded media players.
+    Some videos, streams, images, posters, descriptions, and other
+    materials displayed on this website may be hosted, provided,
+    or made available by external third-party websites and services.
+  </p>
 
-    <h2>Copyright and Ownership</h2>
+  <h2>Third-Party Content</h2>
 
-    <p>
-      All trademarks, logos, movie titles, posters, images, videos,
-      and other copyrighted materials belong to their respective
-      owners. Their appearance on MovieFlixHD does not imply
-      ownership, sponsorship, partnership, or official affiliation.
-    </p>
+  <p>
+    We do not host, upload, produce, or claim ownership of
+    third-party movies, television episodes, videos, or other
+    copyrighted media displayed through embedded players or
+    external sources on our website.
+  </p>
 
-    <p>
-      MovieFlixHD respects intellectual property rights. If you are
-      a copyright owner or authorized representative and have
-      concerns about content accessible through our website,
-      please refer to our
-      <a href="dmca.html">DMCA Policy</a> or
-      <a href="contact.html">contact us</a>.
-    </p>
+  <p>
+    Any embedded content remains the property of its respective
+    copyright owners, creators, distributors, or providers.
+    We do not control the availability, quality, accuracy, or
+    content of external third-party services.
+  </p>
 
-    <h2>Independent Website</h2>
+  <h2>Copyright and Ownership</h2>
 
-    <p>
-      MovieFlixHD is not affiliated with, endorsed by, or officially
-      connected to any movie studio, production company, streaming
-      platform, or content distributor unless explicitly stated.
-    </p>
+  <p>
+    All trademarks, logos, movie titles, posters, images, videos,
+    and other copyrighted materials belong to their respective
+    owners. Their appearance on MovieFlixHD does not imply
+    ownership, sponsorship, partnership, or official affiliation.
+  </p>
 
-    <p>
-      Our purpose is to provide an accessible platform for
-      discovering entertainment information and third-party content.
-    </p>
+  <p>
+    MovieFlixHD respects intellectual property rights. If you are
+    a copyright owner or authorized representative and have
+    concerns about content accessible through our website,
+    please refer to our
+    <a href="dmca.html">DMCA Policy</a> or
+    <a href="contact.html">contact us</a>.
+  </p>
 
-    <h2>Contact Us</h2>
+  <h2>Independent Website</h2>
 
-    <p>
-      For questions, feedback, or copyright-related concerns,
-      please visit our <a href="contact.html">Contact Us</a> page.
-    </p>
+  <p>
+    MovieFlixHD is not affiliated with, endorsed by, or officially
+    connected to any movie studio, production company, streaming
+    platform, or content distributor unless explicitly stated.
+  </p>
 
-    <a href="index.html" class="back-home">← Back to Home</a>
+  <p>
+    Our purpose is to provide an accessible platform for
+    discovering entertainment information and third-party content.
+  </p>
 
-  </main>
+  <h2>Contact Us</h2>
 
-  <footer class="footer">
-    <div class="footer-container">
+  <p>
+    For questions, feedback, or copyright-related concerns,
+    please visit our <a href="contact.html">Contact Us</a> page.
+  </p>
 
-      <p>© 2026 MovieFlixHD. All rights reserved.</p>
+  <a href="./" class="back-home">← Back to Home</a>
 
-      <div class="footer-links">
-        <a href="about.html">About Us</a>
-        <a href="contact.html">Contact</a>
-        <a href="privacy.html">Privacy Policy</a>
-        <a href="terms.html">Terms of Service</a>
-        <a href="copyright.html">Copyright</a>
-        <a href="dmca.html">DMCA</a>
-        <a href="disclaimer.html">Disclaimer</a>
-        <a href="faq.html">FAQ</a>
-      </div>
+</main>
 
-    </div>
-  </footer>
+<!-- FOOTER: SAME AS HOMEPAGE -->
+<footer class="footer">
+
+  <a class="logo footer-logo" href="./" aria-label="MovieFlixHD Home">
+    <span class="logo-play" aria-hidden="true">
+      <svg viewBox="0 0 24 24" focusable="false">
+        <path d="M8 5.8v12.4L18 12 8 5.8Z" fill="currentColor"/>
+      </svg>
+    </span>
+
+    <span class="logo-text">MOVIE<span>FLIXHD</span></span>
+  </a>
+
+  <p>Discover movies and series.</p>
+
+  <nav class="footer-links" aria-label="Footer links">
+    <a href="about.html">About Us</a>
+    <a href="contact.html">Contact Us</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="terms.html">Terms</a>
+    <a href="copyright.html">Copyright</a>
+    <a href="dmca.html">DMCA</a>
+    <a href="disclaimer.html">Disclaimer</a>
+    <a href="faq.html">FAQ</a>
+  </nav>
+
+  <small>© <span id="year">2026</span> MovieFlixHD. All rights reserved.</small>
+
+</footer>
 
 </body>
 </html>
