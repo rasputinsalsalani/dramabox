@@ -196,22 +196,31 @@ select:focus-visible {
   width:100%;
 }
 
-/* FEATURED MOVIE LABEL */
+/* FEATURED MOVIE LABEL - HERO ONLY */
 
-Ahh, gets na gets ko na lods! Gusto mong lagyan din ng maikling red gradient line sa kabilang side ng FEATURED MOVIE para balanced at symmetrical ang Hero Banner.
+#banner .banner-label {
+  display:inline-block;
+  color:#ff334d;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:3px;
+  margin-bottom:15px;
+  text-transform:uppercase;
+  text-shadow:
+    0 1px 0 #b9001b,
+    0 2px 0 #920016,
+    0 3px 0 #700011,
+    0 4px 0 #52000d,
+    0 5px 7px rgba(0,0,0,.8),
+    0 0 14px rgba(255,51,77,.55);
+}
 
-Ganito ang target:
+#banner .banner-label::before,
+#banner .banner-label::after {
+  content:none !important;
+  display:none !important;
+}
 
-FEATURED MOVIE
-
-
-Movie Title
-Movie description goes here...
-▶ WATCH NOW
-
-CSS lang ang babaguhin natin, hindi gagalawin ang poster, title, description, o button.
-
-Sa home.css, idagdag ang ::before sa kasalukuyang .banner-label::after rule para maging:
 .banner-content h1 {
   font-size:clamp(32px,5vw,58px);
   font-weight:950;
@@ -998,15 +1007,15 @@ Sa home.css, idagdag ang ::before sa kasalukuyang .banner-label::after rule para
 
   .banner-content h1 { font-size:29px; }
 
-  .banner-label {
+  #banner .banner-label {
     font-size:9px;
     margin-bottom:12px;
   }
 
-  .banner-label::before,
-  .banner-label::after {
-    width:20px;
-    flex-basis:20px;
+  #banner .banner-label::before,
+  #banner .banner-label::after {
+    content:none !important;
+    display:none !important;
   }
 
   .meta-line {
@@ -1215,4 +1224,3 @@ Sa home.css, idagdag ang ::before sa kasalukuyang .banner-label::after rule para
 }
 
 ::-webkit-scrollbar-thumb:hover { background:var(--red); }
-
