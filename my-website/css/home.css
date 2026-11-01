@@ -345,6 +345,8 @@ select:focus-visible {
   margin-bottom:5px;
 }
 
+/* GRADIENT SECTION HEADINGS */
+
 .section-heading h2 {
   display:flex;
   align-items:center;
@@ -353,17 +355,38 @@ select:focus-visible {
   font-size:21px;
   font-weight:850;
   letter-spacing:-.35px;
+
+  background:linear-gradient(
+    90deg,
+    #ffffff 0%,
+    #ff7180 45%,
+    #e50924 100%
+  );
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  color:transparent;
 }
+
+/* GRADIENT LINES - BOTH SIDES */
 
 .section-heading h2::before,
 .section-heading h2::after {
   content:"";
   display:block;
-  flex:0 0 35px;
+  flex:1 1 35px;
+  min-width:35px;
   height:2px;
   border-radius:20px;
-  background:var(--red);
-  box-shadow:0 0 8px rgba(229,9,36,.25);
+  background:linear-gradient(
+    90deg,
+    #e50924 0%,
+    #ff5268 50%,
+    #ffffff 100%
+  );
+  box-shadow:
+    0 0 6px rgba(229,9,36,.35),
+    0 0 12px rgba(229,9,36,.18);
 }
 
 /* POSTER GRID */
