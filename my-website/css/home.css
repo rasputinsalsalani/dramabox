@@ -345,16 +345,18 @@ select:focus-visible {
   margin-bottom:5px;
 }
 
-/* GRADIENT SECTION HEADINGS */
+/* LEFT-ALIGNED GRADIENT SECTION HEADINGS */
 
 .section-heading h2 {
   display:flex;
   align-items:center;
-  gap:18px;
+  justify-content:flex-start;
+  gap:15px;
   width:100%;
   font-size:21px;
   font-weight:850;
   letter-spacing:-.35px;
+  text-align:left;
 
   background:linear-gradient(
     90deg,
@@ -368,13 +370,17 @@ select:focus-visible {
   color:transparent;
 }
 
-/* GRADIENT LINES - BOTH SIDES */
+/* GRADIENT LINE ONLY ON THE RIGHT */
 
-.section-heading h2::before,
+.section-heading h2::before {
+  content:none;
+  display:none;
+}
+
 .section-heading h2::after {
   content:"";
   display:block;
-  flex:1 1 35px;
+  flex:1 1 auto;
   min-width:35px;
   height:2px;
   border-radius:20px;
