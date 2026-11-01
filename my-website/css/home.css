@@ -198,33 +198,20 @@ select:focus-visible {
 
 /* FEATURED MOVIE LABEL */
 
-.banner-label {
-  display:inline-flex;
-  align-items:center;
-  gap:9px;
-  color:var(--red-light);
-  font-size:11px;
-  font-weight:900;
-  letter-spacing:2.5px;
-  margin-bottom:15px;
-}
+Ahh, gets na gets ko na lods! Gusto mong lagyan din ng maikling red gradient line sa kabilang side ng FEATURED MOVIE para balanced at symmetrical ang Hero Banner.
 
-.banner-label::before,
-.banner-label::after {
-  content:"";
-  display:block;
-  width:25px;
-  height:2px;
-  flex:0 0 25px;
-  border-radius:5px;
-  background:linear-gradient(90deg,transparent,var(--red-light));
-  box-shadow:0 0 7px rgba(229,9,36,.3);
-}
+Ganito ang target:
 
-.banner-label::after {
-  background:linear-gradient(90deg,var(--red-light),transparent);
-}
+FEATURED MOVIE
 
+
+Movie Title
+Movie description goes here...
+▶ WATCH NOW
+
+CSS lang ang babaguhin natin, hindi gagalawin ang poster, title, description, o button.
+
+Sa home.css, idagdag ang ::before sa kasalukuyang .banner-label::after rule para maging:
 .banner-content h1 {
   font-size:clamp(32px,5vw,58px);
   font-weight:950;
