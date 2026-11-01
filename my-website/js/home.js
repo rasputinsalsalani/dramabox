@@ -1,4 +1,3 @@
-
 (() => {
   "use strict";
 
@@ -758,19 +757,11 @@
         -webkit-backdrop-filter: blur(16px);
       }
 
-      .gate-title {
-        margin: 0;
-        color: #fff;
-        font-size: clamp(20px, 4vw, 28px);
-        font-weight: 800;
-        letter-spacing: 1px;
-      }
-
       .gate-countdown {
         margin: 0;
         color: #fff;
         font-size: 15px;
-        opacity: 0.85;
+        opacity: 0.9;
       }
 
       .gate-countdown span {
@@ -780,7 +771,7 @@
       }
 
       .play-now-btn {
-        display: inline-flex;
+        display: none;
         align-items: center;
         justify-content: center;
         gap: 10px;
@@ -797,6 +788,10 @@
         transition: transform 0.2s, background 0.2s;
       }
 
+      .play-now-btn.is-visible {
+        display: inline-flex;
+      }
+
       .play-now-btn:hover {
         background: #ff1824;
         transform: scale(1.04);
@@ -804,14 +799,6 @@
 
       .play-now-btn:active {
         transform: scale(0.97);
-      }
-
-      .gate-hint {
-        max-width: 300px;
-        margin: 0;
-        color: #ddd;
-        font-size: 12px;
-        line-height: 1.5;
       }
     `;
 
@@ -841,9 +828,7 @@
       video.innerHTML = `
         <div class="play-now-message" id="player-gate">
 
-          <h2 class="gate-title">READY TO WATCH?</h2>
-
-          <p class="gate-countdown">
+          <p class="gate-countdown" id="gate-countdown-text">
             Starting in <span id="gate-countdown-number">3</span>
           </p>
 
@@ -856,10 +841,6 @@
             <span aria-hidden="true">▶</span>
             <span>PLAY NOW</span>
           </button>
-
-          <p class="gate-hint">
-            Click PLAY NOW to start watching immediately.
-          </p>
 
         </div>
       `;
@@ -901,7 +882,7 @@
   // ==========================================
 
   function startAdCountdown() {
-    const countdown = $("gate-countdown-number");
+    clearAdGateTimers();
 
     gateInterval = setInterval(() => {
       if (playerUnlocked) {
@@ -910,6 +891,8 @@
       }
 
       countdownValue--;
+
+      const countdown = $("gate-countdown-number");
 
       if (countdown) {
         countdown.textContent = String(
@@ -931,31 +914,40 @@
 
     autoAdAttempted = true;
 
-    // Attempt to open the advertisement in a new tab.
-    // Browsers may block automatic popups without a click.
-    window.open(
-      AD_URL,
-      "_blank",
-      "noopener,noreferrer"
-    );
+    // First advertisement attempt.
+    // The browser may block this because it is not triggered
+    // directly by a user click.
 
-    // Keep the player gate visible until the viewer clicks.
-    const countdown = $("gate-countdown-number");
-
-    if (countdown) {
-      countdown.textContent = "✓";
+    try {
+      window.open(
+        AD_URL,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    } catch (error) {
+      console.warn("Automatic ad popup was blocked:", error);
     }
 
-    const countdownText = document.querySelector(".gate-countdown");
+    // Show the ready message after the first ad attempt.
+
+    const countdownText = $("gate-countdown-text");
 
     if (countdownText) {
       countdownText.innerHTML =
         'Your video is ready. <span>▶</span>';
     }
+
+    // Reveal PLAY NOW only after the countdown and first attempt.
+
+    const button = $("unlock-player");
+
+    if (button) {
+      button.classList.add("is-visible");
+    }
   }
 
   // ==========================================
-  // AD REDIRECT + VIDEO UNLOCK
+  // SECOND AD REDIRECT + VIDEO UNLOCK
   // ==========================================
 
   function unlockPlayer() {
@@ -965,14 +957,20 @@
 
     clearAdGateTimers();
 
-    // User click: attempt opening the ad again.
-    // This click-triggered attempt is more likely to be
-    // allowed by browser popup protection.
-    window.open(
-      AD_URL,
-      "_blank",
-      "noopener,noreferrer"
-    );
+    // Second advertisement attempt.
+    // This is triggered directly by the viewer's click.
+
+    try {
+      window.open(
+        AD_URL,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    } catch (error) {
+      console.warn("Second ad popup was blocked:", error);
+    }
+
+    // Load the selected movie or episode.
 
     loadVideo();
   }
