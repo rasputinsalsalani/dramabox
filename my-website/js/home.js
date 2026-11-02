@@ -1,3 +1,4 @@
+
 (() => {
   "use strict";
 
@@ -51,9 +52,6 @@
 
   let searchTimer = null;
   let searchRequest = 0;
-
-  let gateInterval = null;
-  let countdownValue = 3;
 
   // ==========================================
   // ELEMENT HELPERS
@@ -660,10 +658,7 @@
   }
 
   function clearAdGateTimers() {
-    if (gateInterval) {
-      clearInterval(gateInterval);
-      gateInterval = null;
-    }
+    // No countdown or automatic ad timers.
   }
 
   function openMoviePlayer(movie) {
@@ -718,7 +713,7 @@
   }
 
   // ==========================================
-  // PLAYER GATE DESIGN
+  // PLAYER GATE DESIGN — NO COUNTDOWN
   // ==========================================
 
   function addGateStyles() {
@@ -750,21 +745,8 @@
         -webkit-backdrop-filter: blur(16px);
       }
 
-      .gate-countdown {
-        margin: 0;
-        color: #fff;
-        font-size: 15px;
-        opacity: 0.9;
-      }
-
-      .gate-countdown span {
-        color: #ffcc00;
-        font-size: 25px;
-        font-weight: 900;
-      }
-
       .play-now-btn {
-        display: none;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 10px;
@@ -781,10 +763,6 @@
         transition: transform 0.2s, background 0.2s;
       }
 
-      .play-now-btn.is-visible {
-        display: inline-flex;
-      }
-
       .play-now-btn:hover {
         background: #ff1824;
         transform: scale(1.04);
@@ -799,14 +777,11 @@
   }
 
   // ==========================================
-  // OPEN PLAYER WITH 3-SECOND COUNTDOWN
+  // OPEN PLAYER — INSTANT PLAY BUTTON
   // ==========================================
 
   function openPlayer(title, subtitle, description = "") {
-    clearAdGateTimers();
-
     playerUnlocked = false;
-    countdownValue = 3;
 
     setText("player-title", title);
     setText("player-subtitle", subtitle);
@@ -819,10 +794,6 @@
     if (video) {
       video.innerHTML = `
         <div class="play-now-message" id="player-gate">
-
-          <p class="gate-countdown" id="gate-countdown-text">
-            Starting in <span id="gate-countdown-number">3</span>
-          </p>
 
           <button
             class="play-now-btn"
@@ -865,53 +836,6 @@
     show(elements.modal);
 
     document.body.style.overflow = "hidden";
-
-    startAdCountdown();
-  }
-
-  // ==========================================
-  // 3-SECOND COUNTDOWN — NO AUTOMATIC AD
-  // ==========================================
-
-  function startAdCountdown() {
-    clearAdGateTimers();
-
-    gateInterval = setInterval(() => {
-      if (playerUnlocked) {
-        clearAdGateTimers();
-        return;
-      }
-
-      countdownValue--;
-
-      const countdown = $("gate-countdown-number");
-
-      if (countdown) {
-        countdown.textContent = String(
-          Math.max(countdownValue, 0)
-        );
-      }
-
-      if (countdownValue <= 0) {
-        clearAdGateTimers();
-
-        // No automatic popup here.
-        // Show the ready message and reveal PLAY NOW.
-
-        const countdownText = $("gate-countdown-text");
-
-        if (countdownText) {
-          countdownText.innerHTML =
-            'Your video is ready. <span>▶</span>';
-        }
-
-        const button = $("unlock-player");
-
-        if (button) {
-          button.classList.add("is-visible");
-        }
-      }
-    }, 1000);
   }
 
   // ==========================================
@@ -923,11 +847,7 @@
 
     playerUnlocked = true;
 
-    clearAdGateTimers();
-
-    // Keep only one advertisement attempt.
-    // Triggered by the viewer clicking PLAY NOW.
-
+    // One advertisement attempt when PLAY NOW is clicked.
     try {
       const adWindow = window.open(
         AD_URL,
@@ -942,7 +862,6 @@
     }
 
     // Load the selected movie or episode.
-
     loadVideo();
   }
 
@@ -1055,8 +974,6 @@
   }
 
   function closeModal() {
-    clearAdGateTimers();
-
     hide(elements.modal);
 
     const video = $("video-container");
@@ -1307,8 +1224,6 @@
 
   function goHome(event) {
     if (event) event.preventDefault();
-
-    clearAdGateTimers();
 
     currentItem = null;
     currentMovie = null;
