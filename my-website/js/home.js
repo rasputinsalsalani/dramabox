@@ -52,10 +52,8 @@
   let searchTimer = null;
   let searchRequest = 0;
 
-  let gateTimer = null;
   let gateInterval = null;
   let countdownValue = 3;
-  let autoAdAttempted = false;
 
   // ==========================================
   // ELEMENT HELPERS
@@ -662,11 +660,6 @@
   }
 
   function clearAdGateTimers() {
-    if (gateTimer) {
-      clearTimeout(gateTimer);
-      gateTimer = null;
-    }
-
     if (gateInterval) {
       clearInterval(gateInterval);
       gateInterval = null;
@@ -813,7 +806,6 @@
     clearAdGateTimers();
 
     playerUnlocked = false;
-    autoAdAttempted = false;
     countdownValue = 3;
 
     setText("player-title", title);
@@ -878,7 +870,7 @@
   }
 
   // ==========================================
-  // AUTOMATIC AD ATTEMPT AFTER 3 SECONDS
+  // 3-SECOND COUNTDOWN — NO AUTOMATIC AD
   // ==========================================
 
   function startAdCountdown() {
@@ -901,53 +893,29 @@
       }
 
       if (countdownValue <= 0) {
-        clearInterval(gateInterval);
-        gateInterval = null;
+        clearAdGateTimers();
 
-        attemptAutomaticAd();
+        // No automatic popup here.
+        // Show the ready message and reveal PLAY NOW.
+
+        const countdownText = $("gate-countdown-text");
+
+        if (countdownText) {
+          countdownText.innerHTML =
+            'Your video is ready. <span>▶</span>';
+        }
+
+        const button = $("unlock-player");
+
+        if (button) {
+          button.classList.add("is-visible");
+        }
       }
     }, 1000);
   }
 
-  function attemptAutomaticAd() {
-    if (playerUnlocked || autoAdAttempted) return;
-
-    autoAdAttempted = true;
-
-    // First advertisement attempt.
-    // The browser may block this because it is not triggered
-    // directly by a user click.
-
-    try {
-      window.open(
-        AD_URL,
-        "_blank",
-        "noopener,noreferrer"
-      );
-    } catch (error) {
-      console.warn("Automatic ad popup was blocked:", error);
-    }
-
-    // Show the ready message after the first ad attempt.
-
-    const countdownText = $("gate-countdown-text");
-
-    if (countdownText) {
-      countdownText.innerHTML =
-        'Your video is ready. <span>▶</span>';
-    }
-
-    // Reveal PLAY NOW only after the countdown and first attempt.
-
-    const button = $("unlock-player");
-
-    if (button) {
-      button.classList.add("is-visible");
-    }
-  }
-
   // ==========================================
-  // SECOND AD REDIRECT + VIDEO UNLOCK
+  // ONE AD ATTEMPT + VIDEO UNLOCK
   // ==========================================
 
   function unlockPlayer() {
@@ -957,17 +925,20 @@
 
     clearAdGateTimers();
 
-    // Second advertisement attempt.
-    // This is triggered directly by the viewer's click.
+    // Keep only one advertisement attempt.
+    // Triggered by the viewer clicking PLAY NOW.
 
     try {
-      window.open(
+      const adWindow = window.open(
         AD_URL,
-        "_blank",
-        "noopener,noreferrer"
+        "_blank"
       );
+
+      if (adWindow) {
+        adWindow.opener = null;
+      }
     } catch (error) {
-      console.warn("Second ad popup was blocked:", error);
+      console.warn("Ad popup was blocked:", error);
     }
 
     // Load the selected movie or episode.
@@ -1098,7 +1069,6 @@
 
     document.body.style.overflow = "";
     playerUnlocked = false;
-    autoAdAttempted = false;
   }
 
   // ==========================================
